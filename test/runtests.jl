@@ -56,7 +56,6 @@ end
         for sample_rate in [1.0, 0.5, 100.0, 128.33]
             samples = make_test_samples(sample_rate)
             for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
-                @show sample_rate, i, j
                 @test samples[:, AlignedSpan(sample_rate, i, j)] == samples[:, i:j]
             end
         end
