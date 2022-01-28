@@ -5,14 +5,16 @@ version = "0.1.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
-Onda = "e853f5be-6863-11e9-128d-476edb89bfb5"
 TimeSpans = "bb34ddd2-327f-4c4a-bfb0-c98fc494ece1"
 
 [compat]
 julia = "1.6"
+TimeSpans = "0.2.7"
+Onda = "0.14"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Onda = "e853f5be-6863-11e9-128d-476edb89bfb5"
 
 [targets]
-test = ["Test"]
+test = ["Test", "Onda"]

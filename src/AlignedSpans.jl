@@ -94,10 +94,4 @@ function AlignedSpan(sample_rate, span, ::RoundingMode{:Down})
     return AlignedSpan(sample_rate, i, j)
 end
 
-# Piracy to fix https://github.com/beacon-biosignals/TimeSpans.jl/issues/28
-function TimeSpans.index_from_time(sample_rate, span)
-    aligned = AlignedSpan(sample_rate, span, RoundDown)
-    return aligned.i : aligned.j
-end
-
 end
