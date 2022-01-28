@@ -80,7 +80,7 @@ end
     end
 
     function test_subspans(aligned, sample_rate, dur)
-        subspans = consecutive_subspans(aligned, dur)
+        subspans = collect(consecutive_subspans(aligned, dur))
         @test length(subspans) == cld(n_samples(aligned), n_samples(sample_rate, dur))
         for i in 1:(length(subspans) - 1)
             @test subspans[i + 1].i == subspans[i].j + 1 # consecutive indices
@@ -102,9 +102,11 @@ end
 
         # Special case: duration == inv(sampling rate)
         subspans = consecutive_subspans(aligned, Second(1))
-        @test length(subspans) == 100
+        @test subspans isa Base.Generator
+        v = collect(subspans)
+        @test length(v) == 100
         for i in 1:100
-            @test subspans[i] == AlignedSpan(sample_rate, i, i) # all one-sample wide
+            @test v[i] == AlignedSpan(sample_rate, i, i) # all one-sample wide
         end
 
         test_subspans(aligned, sample_rate, Second(1))

@@ -147,7 +147,7 @@ end
 """
     consecutive_subspans(span::AlignedSpan, duration::Period)
 
-Creates a `Vector{AlignedSpan}` such that each `AlignedSpan` has consecutive indices
+Creates an iterator of `AlignedSpan` such that each `AlignedSpan` has consecutive indices
 which cover all of the original `span`'s indices. In particular,
 
 * Each span has `n = n_samples(span.sample_rate, duration)` samples, except possibly
@@ -164,7 +164,7 @@ end
 function consecutive_subspans(span::AlignedSpan, n::Int)
     i = span.i
     j = span.j
-    return [AlignedSpan(span.sample_rate, first(inds), last(inds)) for inds in Iterators.partition(i:j, n)]
+    return (AlignedSpan(span.sample_rate, first(inds), last(inds)) for inds in Iterators.partition(i:j, n))
 end
 
 end
