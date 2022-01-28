@@ -34,8 +34,10 @@ TimeSpan(00:00:01.500000000, 00:00:03.500000000)
 Now I want to execute some call
 
 ```julia
-plot(span, samples[:, span]) # for some `plot` that understands TimeSpans -- doesn't matter what
+plot(span, samples[:, span])
 ```
+
+for some `plot` that understands TimeSpans -- doesn't matter what function, exactly.
 
 What is wrong with this?
 
@@ -67,8 +69,10 @@ julia> span = TimeSpan(Millisecond(1500), Millisecond(3500))
 TimeSpan(00:00:01.500000000, 00:00:03.500000000)
 ```
 
-But now, I want to be careful, so I do
+This time, we do
 ```julia
+julia> using AlignedSpans
+
 julia> aligned_span = AlignedSpan(samples.info.sample_rate, span, RoundDown)
 AlignedSpan(00:00:01.000000000, 00:00:03.000000001)
 
