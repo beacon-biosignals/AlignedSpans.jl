@@ -107,6 +107,7 @@ and any rounding happens when it is created instead of when indexing into `sampl
 
  There are three currently implemented options for `RoundingMode`.
 
-* `RoundDown`: this matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`, namely both endpoints of the span are rounded downwards to the nearest sample, and the right-endpoint of the `span` is excluded.
-* `RoundInward`: this constructs the largest span (whose endpoints are valid indices) that is entirely contained within `span`.
-* `RoundConstantSamples`: this constructs a span such that the number of samples is a function only of the duration of the input `samples` and the sample rate (but not the particular `start` or `stop` of the samples). This is useful for splitting a `samples` into equal parts.
+* `SpanRoundDown`: this matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`, namely both endpoints of the span are rounded downwards to the nearest sample, and the right-endpoint of the `span` is excluded.
+* `SpanRoundInward`: this constructs the largest span (whose endpoints are valid indices) that is entirely contained within `span`.
+* `SpanRoundDownConstantSamples`: this constructs a span such that the number of samples is a function only of the duration of the input `samples` and the sample rate (but not the particular `start` or `stop` of the samples). This is useful for splitting a `samples` into equal parts.
+

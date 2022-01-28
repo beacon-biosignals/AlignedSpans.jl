@@ -8,14 +8,14 @@ function make_test_samples(sample_rate)
 end
 
 @testset "AlignedSpans.jl" begin
-    @testset "RoundInward" begin
+    @testset "SpanRoundInward" begin
         for span in (TimeSpan(Millisecond(1500), Millisecond(2500)),
                     TimeSpan(Millisecond(1001), Millisecond(2001)),
                     TimeSpan(Millisecond(1001), Millisecond(2999)),
                     TimeSpan(Millisecond(2000), Millisecond(2001)))
             # all spans include only sample 3, at second 2
 
-            aligned = AlignedSpan(1, span, RoundInward)
+            aligned = AlignedSpan(1, span, SpanRoundInward)
             # Only sample included inside `span` is sample 3
             @test TimeSpans.index_from_time(1, aligned) == 3:3
             @test TimeSpan(aligned) == TimeSpan(Second(2), Second(2))
@@ -23,31 +23,31 @@ end
 
         # Does *not* contain any samples
         span = TimeSpan(Millisecond(1999), Millisecond(2000))
-        @test_throws ArgumentError("No samples lie within `span`") AlignedSpan(1, span, RoundInward)
+        @test_throws ArgumentError("No samples lie within `span`") AlignedSpan(1, span, SpanRoundInward)
         
     end
 
-    @testset "RoundConstantSamples" begin
+    @testset "SpanRoundDownConstantSamples" begin
         span = TimeSpan(Millisecond(1500), Millisecond(2500))
-        aligned = AlignedSpan(1, span, RoundConstantSamples)
+        aligned = AlignedSpan(1, span, SpanRoundDownConstantSamples)
         inds = TimeSpans.index_from_time(1, aligned)
         @test length(inds) == AlignedSpans.n_samples(1, duration(span))
         @test inds == 2:2
         for t = 1:100
             translated = translate(span, Second(t))
-            aligned = AlignedSpan(1, translated, RoundConstantSamples)
+            aligned = AlignedSpan(1, translated, SpanRoundDownConstantSamples)
             inds = TimeSpans.index_from_time(1, aligned)
             @test length(inds) == AlignedSpans.n_samples(1, duration(span))
         end
 
         span = TimeSpan(Millisecond(1500), Millisecond(2600))
-        aligned = AlignedSpan(1, span, RoundConstantSamples)
+        aligned = AlignedSpan(1, span, SpanRoundDownConstantSamples)
         @test TimeSpans.index_from_time(1, aligned) == 2:2
 
         # We should get the same number of samples no matter how we translate it
         for t in [Millisecond(1):Millisecond(1):Millisecond(1000); Nanosecond(10):Nanosecond(10):Nanosecond(1000)]
             translated_span = TimeSpans.translate(span, t)
-            aligned = AlignedSpan(1, translated_span, RoundConstantSamples)
+            aligned = AlignedSpan(1, translated_span, SpanRoundDownConstantSamples)
             @test length(TimeSpans.index_from_time(1, aligned)) == length(2:2)
         end
     end

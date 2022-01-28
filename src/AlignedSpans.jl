@@ -2,11 +2,19 @@ module AlignedSpans
 
 using TimeSpans, Dates
 
-export RoundInward, RoundConstantSamples
+export SpanRoundInward, SpanRoundDown, SpanRoundDownConstantSamples
 export AlignedSpan
 
-const RoundInward = RoundingMode{:Inward}()
 const RoundConstantSamples = RoundingMode{:ConstantSamples}()
+
+struct SpanRoundingMode{T, S}
+    start::T
+    stop::S
+end
+
+const SpanRoundInward = SpanRoundingMode(RoundUp, RoundDown)
+const SpanRoundDown = SpanRoundingMode(RoundDown, RoundDown)
+const SpanRoundDownConstantSamples = SpanRoundDown(RoundDown, nothing)
 
 struct AlignedSpan
     sample_rate::Float64
@@ -59,9 +67,9 @@ function n_samples(sample_rate, duration::Period)
 end
 
 # Returns a subset of the original span, corresponding to the samples it contains
-function AlignedSpan(sample_rate, span, ::RoundingMode{:Inward})
-    i, _ = index_and_error_from_time(sample_rate, start(span), RoundUp)
-    j, error = index_and_error_from_time(sample_rate, stop(span), RoundDown)
+function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
+    i, _ = index_and_error_from_time(sample_rate, start(span), mode.start)
+    j, error = index_and_error_from_time(sample_rate, stop(span), mode.stop)
     if error == Nanosecond(0)
         # We must exclude the right endpoint
         j -= 1
@@ -73,25 +81,14 @@ function AlignedSpan(sample_rate, span, ::RoundingMode{:Inward})
 end
 
 
-# Returns a `span` whose left endpoint is rounded down to the nearest sample,
+# Returns a `span` whose left endpoint is rounded to the nearest sample,
 # whose length is always the same number of samples (depending only on the duration, not the position, of the span)
-function AlignedSpan(sample_rate, span, ::RoundingMode{:ConstantSamples})
-    i, _ = index_and_error_from_time(sample_rate, start(span), RoundDown)
+function AlignedSpan(sample_rate, span, mode::SpanRoundingMode{L, Nothing}) where L
+    i, _ = index_and_error_from_time(sample_rate, start(span), mode.start)
     n = n_samples(sample_rate, duration(span))
     j = i + (n-1)
     return AlignedSpan(sample_rate, i, j)
 end
 
-# Round both endpoints down, excluding the right endpoint.
-# Matches the indices from `TimeSpans.index_from_time(sample_rate, span)`
-function AlignedSpan(sample_rate, span, ::RoundingMode{:Down})
-    i, _ = index_and_error_from_time(sample_rate, start(span), RoundDown)
-    j, error = index_and_error_from_time(sample_rate, stop(span), RoundDown)
-    if i != j && error == Nanosecond(0)
-        # We must exclude the right endpoint
-        j -= 1
-    end
-    return AlignedSpan(sample_rate, i, j)
-end
 
 end
