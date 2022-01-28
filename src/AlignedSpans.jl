@@ -44,27 +44,29 @@ end
 
 TimeSpans.istimespan(::AlignedSpan) = true
 TimeSpans.start(span::AlignedSpan) = TimeSpans.time_from_index(span.sample_rate, span.i)
-TimeSpans.stop(span::AlignedSpan) = TimeSpans.time_from_index(span.sample_rate, span.j) + Nanosecond(1) # exclusive stop
+function TimeSpans.stop(span::AlignedSpan)
+    return TimeSpans.time_from_index(span.sample_rate, span.j) + Nanosecond(1)
+end # exclusive stop
 
 function TimeSpans.index_from_time(sample_rate, span::AlignedSpan)
     if sample_rate != span.sample_rate
         throw(ArgumentError("TODO"))
     end
-    return span.i : span.j
+    return (span.i):(span.j)
 end
 
 # Interop with `StepRange`
 function Base.StepRange(span::AlignedSpan)
     t = Nanosecond(round(Int, TimeSpans.nanoseconds_per_sample(span.sample_rate)))
-    return span.i * t : t : span.j * t
+    return (span.i * t):t:(span.j * t)
 end
 
-function AlignedSpan(r::StepRange{T, S}) where {T<:Period, S<:Period}
-   inv_sample_rate_in_ns = Dates.value(convert(Nanosecond, step(r)))
-   sample_rate = TimeSpans.NS_IN_SEC*inv(inv_sample_rate_in_ns)
-   i = first(r) / step(r)
-   j = last(r) / step(r)
-   return AlignedSpan(sample_rate, Int(i), Int(j))
+function AlignedSpan(r::StepRange{T,S}) where {T<:Period,S<:Period}
+    inv_sample_rate_in_ns = Dates.value(convert(Nanosecond, step(r)))
+    sample_rate = TimeSpans.NS_IN_SEC * inv(inv_sample_rate_in_ns)
+    i = first(r) / step(r)
+    j = last(r) / step(r)
+    return AlignedSpan(sample_rate, Int(i), Int(j))
 end
 
 # Helper to get the index and the rounding error in units of time
@@ -97,10 +99,14 @@ function round_endpoint(sample_rate, sample_time, mode::RoundingMode{:Up}, exclu
 end
 
 # Don't care about exclusivity for these modes
-const IGNORES_EXCLUSIVITY = Union{RoundingMode{:Nearest}, RoundingMode{:RoundNearestTiesAway},RoundingMode{:RoundNearestTiesUp}, RoundingMode{:RoundNearestTiesAway}}
+const IGNORES_EXCLUSIVITY = Union{RoundingMode{:Nearest},
+                                  RoundingMode{:RoundNearestTiesAway},
+                                  RoundingMode{:RoundNearestTiesUp},
+                                  RoundingMode{:RoundNearestTiesAway}}
 
-round_endpoint(sample_rate, sample_time, mode::IGNORES_EXCLUSIVITY, exclusive) = first(index_and_error_from_time(sample_rate, sample_time, mode))
-
+function round_endpoint(sample_rate, sample_time, mode::IGNORES_EXCLUSIVITY, exclusive)
+    return first(index_and_error_from_time(sample_rate, sample_time, mode))
+end
 
 function n_samples(sample_rate, duration::Period)
     i, _ = index_and_error_from_time(sample_rate, duration, RoundDown)
@@ -122,9 +128,8 @@ end
 function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
     i, _ = index_and_error_from_time(sample_rate, start(span), mode.start)
     n = n_samples(sample_rate, duration(span))
-    j = i + (n-1)
+    j = i + (n - 1)
     return AlignedSpan(sample_rate, i, j)
 end
-
 
 end
