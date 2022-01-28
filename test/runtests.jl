@@ -1,8 +1,8 @@
-using IndicesVsSpans
+using AlignedSpans
 using Test
 using TimeSpans, Dates
 
-@testset "IndicesVsSpans.jl" begin
+@testset "AlignedSpans.jl" begin
     @testset "RoundInward" begin
         for span in (TimeSpan(Millisecond(1500), Millisecond(2500)),
                     TimeSpan(Millisecond(1001), Millisecond(2001)),
@@ -26,13 +26,13 @@ using TimeSpans, Dates
         span = TimeSpan(Millisecond(1500), Millisecond(2500))
         aligned = AlignedSpan(1, span, RoundConstantSamples)
         inds = TimeSpans.index_from_time(1, aligned)
-        @test length(inds) == IndicesVsSpans.n_samples(1, duration(span))
+        @test length(inds) == AlignedSpans.n_samples(1, duration(span))
         @test inds == 2:2
         for t = 1:100
             translated = translate(span, Second(t))
             aligned = AlignedSpan(1, translated, RoundConstantSamples)
             inds = TimeSpans.index_from_time(1, aligned)
-            @test length(inds) == IndicesVsSpans.n_samples(1, duration(span))
+            @test length(inds) == AlignedSpans.n_samples(1, duration(span))
         end
 
         span = TimeSpan(Millisecond(1500), Millisecond(2600))

@@ -1,4 +1,4 @@
-module IndicesVsSpans
+module AlignedSpans
 
 using TimeSpans, Dates
 
