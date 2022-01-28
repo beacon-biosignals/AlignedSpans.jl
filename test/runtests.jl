@@ -53,6 +53,19 @@ end
         end
     end
 
+    @testset "StepRange roundtripping" begin
+        for sample_rate in [1.0, 0.5, 100.0, 128.33]
+            for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
+                span = AlignedSpan(sample_rate, i, j)
+                r = StepRange(span)
+                span2 = AlignedSpan(r)
+                @test span.i == span2.i
+                @test span.j == span2.j
+                @test span.sample_rate ≈ span2.sample_rate rtol=1e-7 # annoyingly imprecise...
+            end
+        end
+
+    end
     @testset "Samples indexing" begin
         for sample_rate in [1.0, 0.5, 100.0, 128.33]
             samples = make_test_samples(sample_rate)
