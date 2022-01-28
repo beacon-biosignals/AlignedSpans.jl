@@ -2,8 +2,8 @@ module AlignedSpans
 
 using TimeSpans, Dates
 
-export RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
-export AlignedSpan
+export EndpointRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
+export AlignedSpan, consecutive_subspans
 
 struct EndpointRoundingMode
     start::RoundingMode
@@ -30,7 +30,7 @@ struct AlignedSpan
     j::Int
     function AlignedSpan(sample_rate, i, j)
         if j < i
-            throw(ArgumentError("TODO"))
+            throw(ArgumentError("Cannot create `AlignedSpan` with right-endpoint (`j=$j`) strictly smaller than left endpoint (`i=$i`)"))
         end
         return new(sample_rate, i, j)
     end
@@ -79,6 +79,8 @@ function index_and_error_from_time(sample_rate, sample_time::Period, mode::Round
     index = round(Int, floating_index, mode)
     return index, TimeSpans.time_from_index(sample_rate, index) - sample_time
 end
+
+n_samples(aligned::AlignedSpan) = aligned.j - aligned.i + 1
 
 function n_samples(sample_rate, duration::Period)
     duration_in_nanoseconds = Dates.value(convert(Nanosecond, duration))
@@ -140,6 +142,29 @@ function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
     n = n_samples(sample_rate, duration(span))
     j = i + (n - 1)
     return AlignedSpan(sample_rate, i, j)
+end
+
+"""
+    consecutive_subspans(span::AlignedSpan, duration::Period)
+
+Creates a `Vector{AlignedSpan}` such that each `AlignedSpan` has consecutive indices
+which cover all of the original `span`'s indices. In particular,
+
+* Each span has `n = n_samples(span.sample_rate, duration)` samples, except possibly
+the last one, which may have fewer.
+* The number of subspans is given by `cld(n_samples(span), n)`
+* The number of samples in the last subspan is `r = rem(n_samples(span), n)` unless `r=0`, in which
+  case the the last subspan has the same number of samples as the rest, namely `n`.
+"""
+function consecutive_subspans(span::AlignedSpan, duration::Period)
+    n = n_samples(span.sample_rate, duration)
+    return consecutive_subspans(span::AlignedSpan, n)
+end
+
+function consecutive_subspans(span::AlignedSpan, n::Int)
+    i = span.i
+    j = span.j
+    return [AlignedSpan(span.sample_rate, first(inds), last(inds)) for inds in Iterators.partition(i:j, n)]
 end
 
 end
