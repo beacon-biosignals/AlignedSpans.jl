@@ -14,7 +14,7 @@ end
 
 const SpanRoundInward = SpanRoundingMode(RoundUp, RoundDown)
 const SpanRoundDown = SpanRoundingMode(RoundDown, RoundDown)
-const SpanRoundDownConstantSamples = SpanRoundDown(RoundDown, nothing)
+const SpanRoundDownConstantSamples = SpanRoundingMode(RoundDown, nothing)
 
 struct AlignedSpan
     sample_rate::Float64
