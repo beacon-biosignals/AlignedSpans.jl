@@ -20,6 +20,12 @@ struct AlignedSpan
     end
 end
 
+function Base.show(io::IO, w::AlignedSpan)
+    start_string = TimeSpans.format_duration(start(w))
+    stop_string = TimeSpans.format_duration(stop(w))
+    return print(io, "AlignedSpan(", start_string, ", ", stop_string, ')')
+end
+
 TimeSpans.istimespan(::AlignedSpan) = true
 TimeSpans.start(span::AlignedSpan) = TimeSpans.time_from_index(span.sample_rate, span.i)
 TimeSpans.stop(span::AlignedSpan) = TimeSpans.time_from_index(span.sample_rate, span.j) + Nanosecond(1) # exclusive stop
