@@ -1,6 +1,11 @@
 using AlignedSpans
 using Test
-using TimeSpans, Dates
+using TimeSpans, Dates, Onda
+
+
+function make_test_samples(sample_rate)
+    return Samples(permutedims([0:100 10:110]), SamplesInfo("test", ["a", "b"], "microvolt", 0.5, 0.0, UInt16, sample_rate), false)
+end
 
 @testset "AlignedSpans.jl" begin
     @testset "RoundInward" begin
@@ -44,6 +49,16 @@ using TimeSpans, Dates
             translated_span = TimeSpans.translate(span, t)
             aligned = AlignedSpan(1, translated_span, RoundConstantSamples)
             @test length(TimeSpans.index_from_time(1, aligned)) == length(2:2)
+        end
+    end
+
+    @testset "Samples indexing" begin
+        for sample_rate in [1.0, 0.5, 100.0, 128.33]
+            samples = make_test_samples(sample_rate)
+            for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
+                @show sample_rate, i, j
+                @test samples[:, AlignedSpan(sample_rate, i, j)] == samples[:, i:j]
+            end
         end
     end
 end

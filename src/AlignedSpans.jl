@@ -47,35 +47,13 @@ function index_and_error_from_time(sample_rate, sample_time::Period, mode::Round
     return index, TimeSpans.time_from_index(sample_rate, index) - sample_time
 end
 
-# function exact_index_from_time(sample_rate, sample_time::Period)
-#     index, error = index_and_error_from_time(sample_rate, sample_time, RoundNearest)
-
-#     # we allow a 1 ns error, since the TimeSpans's constructor will introduce that
-#     if !(abs(error) <= Nanosecond(1))
-#         # We recompute `f`, but only on the error path
-#         f = float_index_from_time(sample_rate, sample_time)
-#         throw(InexactError(:exact_index_from_time, Int, f))
-#     end
-
-#     return index
-# end
-
-# function exact_index_from_time(sample_rate, span::TimeSpan)
-#     i = exact_index_from_time(sample_rate, start(span))
-#     j = exact_index_from_time(sample_rate, stop(span))
-#     if i != j # do we want this
-#         j -= 1
-#     end
-#     return i:j
-# end
-
 function n_samples(sample_rate, duration::Period)
     i, _ = index_and_error_from_time(sample_rate, duration, RoundDown)
     return i - 1
 end
 
 # Returns a subset of the original span, corresponding to the samples it contains
-function AlignedSpan(sample_rate, span::TimeSpan, ::RoundingMode{:Inward})
+function AlignedSpan(sample_rate, span, ::RoundingMode{:Inward})
     i, _ = index_and_error_from_time(sample_rate, start(span), RoundUp)
     j, error = index_and_error_from_time(sample_rate, stop(span), RoundDown)
     if error == Nanosecond(0)
@@ -91,7 +69,7 @@ end
 
 # Returns a `span` whose left endpoint is rounded down to the nearest sample,
 # whose length is always the same number of samples (depending only on the duration, not the position, of the span)
-function AlignedSpan(sample_rate, span::TimeSpan, ::RoundingMode{:ConstantSamples})
+function AlignedSpan(sample_rate, span, ::RoundingMode{:ConstantSamples})
     i, _ = index_and_error_from_time(sample_rate, start(span), RoundDown)
     n = n_samples(sample_rate, duration(span))
     j = i + (n-1)
@@ -100,7 +78,7 @@ end
 
 # Round both endpoints down, excluding the right endpoint.
 # Matches the indices from `TimeSpans.index_from_time(sample_rate, span)`
-function AlignedSpan(sample_rate, span::TimeSpan, ::RoundingMode{:Down})
+function AlignedSpan(sample_rate, span, ::RoundingMode{:Down})
     i, _ = index_and_error_from_time(sample_rate, start(span), RoundDown)
     j, error = index_and_error_from_time(sample_rate, stop(span), RoundDown)
     if i != j && error == Nanosecond(0)
@@ -108,6 +86,12 @@ function AlignedSpan(sample_rate, span::TimeSpan, ::RoundingMode{:Down})
         j -= 1
     end
     return AlignedSpan(sample_rate, i, j)
+end
+
+# Piracy to fix https://github.com/beacon-biosignals/TimeSpans.jl/issues/28
+function TimeSpans.index_from_time(sample_rate, span)
+    aligned = AlignedSpan(sample_rate, span, RoundDown)
+    return aligned.i : aligned.j
 end
 
 end

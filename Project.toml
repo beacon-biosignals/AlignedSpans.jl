@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Onda = "e853f5be-6863-11e9-128d-476edb89bfb5"
 TimeSpans = "bb34ddd2-327f-4c4a-bfb0-c98fc494ece1"
 
 [compat]
