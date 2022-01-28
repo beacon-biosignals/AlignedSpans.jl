@@ -71,7 +71,7 @@ end
 
 # Helper to get the index and the rounding error in units of time
 function index_and_error_from_time(sample_rate, sample_time::Period, mode::RoundingMode)
-    time_in_nanoseconds = convert(Nanosecond, sample_time).value
+    time_in_nanoseconds = Dates.value(convert(Nanosecond, sample_time))
     time_in_nanoseconds >= 0 ||
         throw(ArgumentError("`sample_time` must be >= 0 nanoseconds"))
     time_in_seconds = time_in_nanoseconds / TimeSpans.NS_IN_SEC
