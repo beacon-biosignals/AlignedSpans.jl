@@ -81,8 +81,12 @@ function index_and_error_from_time(sample_rate, sample_time::Period, mode::Round
 end
 
 function n_samples(sample_rate, duration::Period)
-    i, _ = index_and_error_from_time(sample_rate, duration, RoundDown)
-    return i - 1
+    duration_in_nanoseconds = Dates.value(convert(Nanosecond, duration))
+    duration_in_nanoseconds >= 0 ||
+        throw(ArgumentError("`duration` must be >= 0 nanoseconds"))
+    duration_in_seconds = duration_in_nanoseconds / TimeSpans.NS_IN_SEC
+    n_indices = duration_in_seconds * sample_rate
+    return floor(Int, n_indices)
 end
 
 function start_index_from_time(sample_rate, span, mode)
