@@ -46,18 +46,20 @@ TimeSpans.istimespan(::AlignedSpan) = true
 TimeSpans.start(span::AlignedSpan) = TimeSpans.time_from_index(span.sample_rate, span.i)
 
 function TimeSpans.stop(span::AlignedSpan)
-    return TimeSpans.time_from_index(span.sample_rate, span.j) + Nanosecond(1) # exclusive stop
+     # TimeSpans has a exclusive stop, so we want to be just past our (inclusive) stopping index
+    return TimeSpans.time_from_index(span.sample_rate, span.j) + Nanosecond(1)
 end
 
 function TimeSpans.index_from_time(sample_rate, span::AlignedSpan)
     if sample_rate != span.sample_rate
-        throw(ArgumentError("TODO"))
+        throw(ArgumentError("The `sample_rate` provided, $(sample_rate) does not match the `span`'s sample rate, $(span.sample_rate)."))
     end
     return (span.i):(span.j)
 end
 
 # Interop with `StepRange`
 function Base.StepRange(span::AlignedSpan)
+    # the rounding here is not ideal
     t = Nanosecond(round(Int, TimeSpans.nanoseconds_per_sample(span.sample_rate)))
     return (span.i * t):t:(span.j * t)
 end
