@@ -1,20 +1,27 @@
 module AlignedSpans
 
 using TimeSpans, Dates
+using Intervals
 
-export SpanRoundInward, SpanRoundDown, SpanRoundDownConstantSamples
+export RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
 export AlignedSpan
 
-const RoundConstantSamples = RoundingMode{:ConstantSamples}()
-
-struct SpanRoundingMode{T, S}
-    start::T
-    stop::S
+struct EndpointRoundingMode
+    start::RoundingMode
+    stop::RoundingMode
 end
 
-const SpanRoundInward = SpanRoundingMode(RoundUp, RoundDown)
-const SpanRoundDown = SpanRoundingMode(RoundDown, RoundDown)
-const SpanRoundDownConstantSamples = SpanRoundingMode(RoundDown, nothing)
+struct ConstantSamplesRoundingMode
+    start::RoundingMode
+end
+
+const RoundInward = EndpointRoundingMode(RoundUp, RoundDown)
+const RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)
+
+is_start_exclusive(::TimeSpan) = false
+is_stop_exclusive(::TimeSpan) = true
+is_start_exclusive(::Interval{T, L, R}) where {T,L,R} = L == Open
+is_stop_exclusive(::Interval{T, L, R}) where {T,L,R} = R == Open
 
 struct AlignedSpan
     sample_rate::Float64
@@ -61,19 +68,37 @@ function index_and_error_from_time(sample_rate, sample_time::Period, mode::Round
     return index, TimeSpans.time_from_index(sample_rate, index) - sample_time
 end
 
+function round_endpoint(sample_rate, sample_time, mode::RoundingMode{:Down}, exclusive)
+    index, error = index_and_error_from_time(sample_rate, sample_time, mode)
+    # round down means if we must exclude the point itself by moving to the left
+    if exclusive && iszero(error)
+        index -= 1
+    end
+    return index
+end
+
+function round_endpoint(sample_rate, sample_time, mode::RoundingMode{:Up}, exclusive)
+    index, error = index_and_error_from_time(sample_rate, sample_time, mode)
+    # round up means if we must exclude the point itself by moving to the right
+    if exclusive && iszero(error)
+        index += 1
+    end
+    return index
+end
+
+# Don't care about exclusivity for these modes
+const IGNORES_EXCLUSIVITY = Union{RoundingMode{:Nearest}, RoundingMode{:RoundNearestTiesAway},RoundingMode{:RoundNearestTiesUp}, RoundingMode{:RoundNearestTiesAway}}
+round_endpoint(sample_rate, sample_time, mode::IGNORES_EXCLUSIVITY, exclusive) = first(index_and_error_from_time(sample_rate, sample_time, mode))
+
 function n_samples(sample_rate, duration::Period)
     i, _ = index_and_error_from_time(sample_rate, duration, RoundDown)
     return i - 1
 end
 
 # Returns a subset of the original span, corresponding to the samples it contains
-function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
-    i, _ = index_and_error_from_time(sample_rate, start(span), mode.start)
-    j, error = index_and_error_from_time(sample_rate, stop(span), mode.stop)
-    if error == Nanosecond(0)
-        # We must exclude the right endpoint
-        j -= 1
-    end
+function AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
+    i = round_endpoint(sample_rate, start(span), mode.start, is_start_exclusive(span))
+    j = round_endpoint(sample_rate, stop(span), mode.stop, is_stop_exclusive(span))
     if j < i
         throw(ArgumentError("No samples lie within `span`"))
     end
@@ -83,7 +108,7 @@ end
 
 # Returns a `span` whose left endpoint is rounded to the nearest sample,
 # whose length is always the same number of samples (depending only on the duration, not the position, of the span)
-function AlignedSpan(sample_rate, span, mode::SpanRoundingMode{L, Nothing}) where L
+function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode) where L
     i, _ = index_and_error_from_time(sample_rate, start(span), mode.start)
     n = n_samples(sample_rate, duration(span))
     j = i + (n-1)

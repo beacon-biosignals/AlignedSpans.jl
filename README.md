@@ -73,7 +73,7 @@ This time, we do
 ```julia
 julia> using AlignedSpans
 
-julia> aligned_span = AlignedSpan(samples.info.sample_rate, span, RoundDown)
+julia> aligned_span = AlignedSpan(samples.info.sample_rate, span, RoundEndsDown)
 AlignedSpan(00:00:01.000000000, 00:00:03.000000001)
 
 julia> samples[:, aligned_span]
@@ -102,12 +102,11 @@ I won't have that pesky 0.5s offset.
 
 ## Usage
 
-The main object is `AlignedSpan` which takes in a `sample_rate`, a `span`, and a `RoundingMode`. This constructs an `AlignedSpan` which satisfies the TimeSpans.jl interface. Internally, an `AlignedSpan` stores indices, not times,
-and any rounding happens when it is created instead of when indexing into `samples`.
+The main object is `AlignedSpan` which takes in a `sample_rate`, a `span`, and a description of how to round time endpoints to indices. This constructs an `AlignedSpan` which satisfies the TimeSpans.jl interface. Internally, an `AlignedSpan` stores indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
 
- There are three currently implemented options for `RoundingMode`.
+Rounding options:
 
-* `SpanRoundDown`: this matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`, namely both endpoints of the span are rounded downwards to the nearest sample, and the right-endpoint of the `span` is excluded.
-* `SpanRoundInward`: this constructs the largest span (whose endpoints are valid indices) that is entirely contained within `span`.
-* `SpanRoundDownConstantSamples`: this constructs a span such that the number of samples is a function only of the duration of the input `samples` and the sample rate (but not the particular `start` or `stop` of the samples). This is useful for splitting a `samples` into equal parts.
-
+* `EndpointRoundingMode`: consists of a `RoundingMode` for the `start` and `stop` of the span.
+    * The alias `RoundInward = EndpointRoundingMode(RoundUp, RoundDown)`, for example, constructs the largest span (whose endpoints are valid indices) that is entirely contained within `span`.
+    * The alias `RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_ratn, span)`.
+* `ConstantSamplesRoundingMode` consists of a `RoundingMode` for the `start` alone. The `stop` is determined from the `start` plus a number of samples which is a function only of the sampling rate and the `duration` of the span.
