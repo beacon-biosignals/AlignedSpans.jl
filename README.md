@@ -41,7 +41,7 @@ What is wrong with this?
 
 Let's take a look at the samples we are plotting:
 ```julia
-julia> samples[:, span]  # post TimeSpans#28 being fixed
+julia> samples[:, span]  # TimeSpans v0.2.7+
 Samples (00:00:03.000000000):
   info.kind: "feature"
   info.channels: ["a"]
