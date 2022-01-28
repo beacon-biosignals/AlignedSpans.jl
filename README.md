@@ -59,7 +59,7 @@ These are three samples that correspond to times 1s, 2s, and 3s. However, what w
 
 Note that `plot` is just an example; any function where one is separately passing both a "timespan of interest" and "feature values from that timespan" will have similar issues if one isn't careful about what exactly `samples[:, span]` is doing.
 
-## The fix
+### The fix
 
 Let's take the same setup, with our
 ```julia
