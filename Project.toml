@@ -3,6 +3,10 @@ uuid = "72438786-fd5d-49ef-8843-650acbdfe662"
 authors = ["Beacon Biosignals, Inc."]
 version = "0.1.0"
 
+[deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+TimeSpans = "bb34ddd2-327f-4c4a-bfb0-c98fc494ece1"
+
 [compat]
 julia = "1.6"
 
