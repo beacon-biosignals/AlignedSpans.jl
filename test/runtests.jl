@@ -1,7 +1,9 @@
 using AlignedSpans
 using AlignedSpans: n_samples
 using Test
-using TimeSpans, Dates, Onda
+using TimeSpans, Dates
+# re-enable once there is a compatible Onda
+#using Onda
 
 function make_test_samples(sample_rate)
     return Samples(permutedims([0:100 10:110]),
@@ -27,6 +29,28 @@ end
         span = TimeSpan(Millisecond(1999), Millisecond(2000))
         @test_throws ArgumentError("No samples lie within `span`") AlignedSpan(1, span,
                                                                                RoundInward)
+    end
+
+    @testset "RoundEndsDown" begin
+        for span in (TimeSpan(Millisecond(1500), Millisecond(2500)),
+                     TimeSpan(Millisecond(1001), Millisecond(2001)),
+                     TimeSpan(Millisecond(1001), Millisecond(2999)))
+            aligned = AlignedSpan(1, span, RoundEndsDown)
+            # Only sample included inside `span` is sample 3, but we round left endpoint down
+            @test TimeSpans.index_from_time(1, aligned) == 2:3
+            @test TimeSpan(aligned) ==
+                  TimeSpan(Second(1), Nanosecond(Second(2)) + Nanosecond(1))
+        end
+
+        span = TimeSpan(Millisecond(2000), Millisecond(2001))
+        aligned = AlignedSpan(1, span, RoundEndsDown)
+        @test TimeSpans.index_from_time(1, aligned) == 3:3
+        @test TimeSpan(aligned) == TimeSpan(Second(2), Second(2))
+
+        span = TimeSpan(Millisecond(1999), Millisecond(2000))
+        aligned = AlignedSpan(1, span, RoundEndsDown)
+        @test TimeSpans.index_from_time(1, aligned) == 2:2
+        @test TimeSpan(aligned) == TimeSpan(Second(1), Second(1))
     end
 
     @testset "ConstantSamplesRoundingMode" begin
@@ -70,14 +94,15 @@ end
             end
         end
     end
-    @testset "Samples indexing" begin
-        for sample_rate in [1.0, 0.5, 100.0, 128.33]
-            samples = make_test_samples(sample_rate)
-            for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
-                @test samples[:, AlignedSpan(sample_rate, i, j)] == samples[:, i:j]
-            end
-        end
-    end
+    # Re-enable once there is a compatible Onda
+    # @testset "Samples indexing" begin
+    #     for sample_rate in [1.0, 0.5, 100.0, 128.33]
+    #         samples = make_test_samples(sample_rate)
+    #         for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
+    #             @test samples[:, AlignedSpan(sample_rate, i, j)] == samples[:, i:j]
+    #         end
+    #     end
+    # end
 
     function test_subspans(aligned, sample_rate, dur)
         subspans = collect(consecutive_subspans(aligned, dur))
@@ -117,6 +142,5 @@ end
         test_subspans(aligned, sample_rate, Millisecond(1111))
 
         @test_throws ArgumentError consecutive_subspans(aligned, Millisecond(1))
-
     end
 end

@@ -28,11 +28,11 @@ struct AlignedSpan
     sample_rate::Float64
     i::Int
     j::Int
-    function AlignedSpan(sample_rate, i, j)
+    function AlignedSpan(sample_rate::Number, i::Int, j::Int)
         if j < i
             throw(ArgumentError("Cannot create `AlignedSpan` with right-endpoint (`j=$j`) strictly smaller than left endpoint (`i=$i`)"))
         end
-        return new(sample_rate, i, j)
+        return new(convert(Float64, sample_rate), i, j)
     end
 end
 
