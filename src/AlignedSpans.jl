@@ -79,7 +79,7 @@ function n_samples(sample_rate, duration::Period)
     return floor(Int, n_indices)
 end
 
-function start_index_from_time(sample_rate, span, mode)
+function start_index_from_time(sample_rate, span, mode::Union{RoundUp, RoundDown})
     i, error = index_and_error_from_time(sample_rate, start(span), mode)
     if is_start_exclusive(span) && mode == RoundUp && iszero(error)
         i += 1
@@ -87,7 +87,7 @@ function start_index_from_time(sample_rate, span, mode)
     return i
 end
 
-function stop_index_from_time(sample_rate, span, mode)
+function stop_index_from_time(sample_rate, span, mode::Union{RoundUp, RoundDown})
     j, error = index_and_error_from_time(sample_rate, stop(span), mode)
     if is_stop_exclusive(span) && mode == RoundDown && iszero(error)
         j -= 1
