@@ -45,5 +45,6 @@ AlignedSpans.ConstantSamplesRoundingMode
 
 ```@docs
 n_samples
+AlignedSpans.indices
 consecutive_subspans
 ```

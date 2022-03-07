@@ -1,3 +1,8 @@
+"""
+    indices(span::AlignedSpan) -> UnitRange{Int64}
+
+Returns the sample indices associated to an `AlignedSpan`.
+"""
 indices(span::AlignedSpan) = (span.first_index):(span.last_index)
 
 """
