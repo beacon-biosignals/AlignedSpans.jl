@@ -4,14 +4,15 @@
 
 # AlignedSpan -> Interval
 function Intervals.Interval(span::AlignedSpan)
-    return Interval{Nanosecond, Closed, Closed}(start_time(span), stop_time(span))
+    return Interval{Nanosecond,Closed,Closed}(start_time(span), stop_time(span))
 end
 
 # Interval -> AlignedSpan
-is_start_exclusive(::Interval{T, L, R}) where {T,L,R} = L == Open
-is_stop_exclusive(::Interval{T, L, R}) where {T,L,R} = R == Open
+is_start_exclusive(::Interval{T,L,R}) where {T,L,R} = L == Open
+is_stop_exclusive(::Interval{T,L,R}) where {T,L,R} = R == Open
 
-function start_index_from_time(sample_rate, interval::Interval, mode::Union{RoundUp, RoundDown})
+function start_index_from_time(sample_rate, interval::Interval,
+                               mode::Union{RoundUp,RoundDown})
     first_index, error = index_and_error_from_time(sample_rate, first(interval), mode)
     if is_start_exclusive(interval) && mode == RoundUp && iszero(error)
         first_index += 1
@@ -19,7 +20,8 @@ function start_index_from_time(sample_rate, interval::Interval, mode::Union{Roun
     return first_index
 end
 
-function stop_index_from_time(sample_rate, interval::Interval, mode::Union{RoundUp, RoundDown})
+function stop_index_from_time(sample_rate, interval::Interval,
+                              mode::Union{RoundUp,RoundDown})
     last_index, error = index_and_error_from_time(sample_rate, last(interval), mode)
     if is_stop_exclusive(interval) && mode == RoundDown && iszero(error)
         last_index -= 1
@@ -32,7 +34,8 @@ end
 #####
 
 function Onda.column_arguments(samples::Samples, span::AlignedSpan)
-    span.sample_rate == samples.info.sample_rate || throw(ArgumentError("Sample rate of `samples` ($(samples.info.sample_rate)) does not match sample rate of `AlignedSpan` argument ($(span.sample_rate))."))
+    span.sample_rate == samples.info.sample_rate ||
+        throw(ArgumentError("Sample rate of `samples` ($(samples.info.sample_rate)) does not match sample rate of `AlignedSpan` argument ($(span.sample_rate))."))
     return indices(span)
 end
 
@@ -45,12 +48,16 @@ end
 TimeSpans.istimespan(::AlignedSpan) = false
 
 # TimeSpan -> AlignedSpan is supported by passing to Intervals
-to_interval(span) = Interval{Nanosecond, Closed, Open}(start(span), stop(span))
+to_interval(span) = Interval{Nanosecond,Closed,Open}(start(span), stop(span))
 to_interval(span::Interval) = span
 to_interval(span::AlignedSpan) = Interval(span)
 
-start_index_from_time(sample_rate, span, mode) = start_index_from_time(sample_rate, to_interval(span), mode)
-stop_index_from_time(sample_rate, span, mode) = stop_index_from_time(sample_rate, to_interval(span), mode)
+function start_index_from_time(sample_rate, span, mode)
+    return start_index_from_time(sample_rate, to_interval(span), mode)
+end
+function stop_index_from_time(sample_rate, span, mode)
+    return stop_index_from_time(sample_rate, to_interval(span), mode)
+end
 
 #####
 ##### StructTypes

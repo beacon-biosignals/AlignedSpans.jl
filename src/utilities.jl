@@ -28,5 +28,7 @@ function consecutive_subspans(span::AlignedSpan, n::Int)
     first_index = span.first_index
     last_index = span.last_index
     rate = span.sample_rate
-    return (AlignedSpan(rate, first(I), last(I)) for I in Iterators.partition(first_index:last_index, n))
+    return (AlignedSpan(rate, first(I), last(I)) for I in
+                                                     Iterators.partition(first_index:last_index,
+                                                                         n))
 end

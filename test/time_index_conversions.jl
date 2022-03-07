@@ -27,9 +27,12 @@ end
             # compute with a very simple algorithm
             index = naive_index_from_time(rate, sample_time)
             # Check against our `TimeSpans.index_from_time`:
-            @test index == AlignedSpans.index_and_error_from_time(rate, sample_time, RoundDown)[1]
+            @test index ==
+                  AlignedSpans.index_and_error_from_time(rate, sample_time, RoundDown)[1]
             # Works even if `rate` is in Float64 precision:
-            @test index == AlignedSpans.index_and_error_from_time(Float64(rate), sample_time, RoundDown)[1]
+            @test index ==
+                  AlignedSpans.index_and_error_from_time(Float64(rate), sample_time,
+                                                         RoundDown)[1]
         end
     end
 end
@@ -42,15 +45,15 @@ end
 
 @testset "`n_samples`" begin
     times = [Nanosecond(12345), Minute(5), Nanosecond(Minute(5)) + Nanosecond(1),
-    Nanosecond(1), Nanosecond(10^6), Nanosecond(6970297031)]
+             Nanosecond(1), Nanosecond(10^6), Nanosecond(6970297031)]
     append!(times, Nanosecond.(Second(1):Second(1):Second(20)))
     sort!(times)
 
     for rate in (101 // 2, 1001 // 10, 200, 256, 1, 10)
-        for i in 1:length(times), j = (i+1):length(times)
+        for i in 1:length(times), j in (i + 1):length(times)
             span = TimeSpan(times[i], times[j])
-            
-            if AlignedSpans.duration(span) < Nanosecond(floor(Int, 10^9*inv(rate)))
+
+            if AlignedSpans.duration(span) < Nanosecond(floor(Int, 10^9 * inv(rate)))
                 @test n_samples(rate, AlignedSpans.duration(span)) == 0
                 continue
             end
@@ -63,7 +66,7 @@ end
             # `n_samples(rate, AlignedSpans.duration(span))` gives us the minimum
             # number of samples of any span of that duration.
             # Thus, we should have:
-            @test n >= n_samples(rate, AlignedSpans.duration(span)) >= n-1
+            @test n >= n_samples(rate, AlignedSpans.duration(span)) >= n - 1
         end
     end
 end
