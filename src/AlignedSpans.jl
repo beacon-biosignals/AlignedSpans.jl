@@ -7,11 +7,26 @@ using StructTypes, ArrowTypes
 export EndpointRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
 export AlignedSpan, consecutive_subspans, n_samples
 
+"""
+    EndpointRoundingMode(start::RoundingMode, stop::RoundingMode)
+
+Creates a rounding object for [`AlignedSpan`](@ref) to indicate how the `AlignedSpan`'s
+endpoints should be determined from a given `span`s endpoints'.
+"""
 struct EndpointRoundingMode
     start::RoundingMode
     stop::RoundingMode
 end
 
+"""
+    ConstantSamplesRoundingMode(start::RoundingMode)
+
+Creates a rounding object for [`AlignedSpan`](@ref) to indicate the `AlignedSpan`
+should be constructed by the `start` and `duration` of the `span`, without regard to its `stop`.
+
+If two `span`s have the same duration, then the resulting `AlignedSpan`'s will have the same
+number of samples when constructed with this rounding mode.
+"""
 struct ConstantSamplesRoundingMode
     start::RoundingMode
 end
@@ -21,11 +36,11 @@ const RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)
 
 struct AlignedSpan
     sample_rate::Float64
-    first_index::Int
-    last_index::Int
+    first_index::Int64
+    last_index::Int64
     function AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
         if last_index < first_index
-            throw(ArgumentError("Cannot create `AlignedSpan` with right-endpoint (`last_index=$last_index`) strictly smaller than left endpoint (`first_index=$first_index`)"))
+            throw(ArgumentError("Cannot create `AlignedSpan` with right-endpoint (`last_index=$(last_index)`) strictly smaller than left endpoint (`first_index=$(first_index)`)"))
         end
         return new(convert(Float64, sample_rate), first_index, last_index)
     end
@@ -103,7 +118,7 @@ Note: `span` may be of any type which which provides a method for `AlignedSpans.
 function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
     first_index = start_index_from_time(sample_rate, span, mode.start)
     n = n_samples(sample_rate, duration(span))
-    last_index = first_index + (n - 1)
+    last_index = first_index + n - 1
     return AlignedSpan(sample_rate, first_index, last_index)
 end
 

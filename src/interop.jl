@@ -11,7 +11,7 @@ end
 is_start_exclusive(::Interval{T, L, R}) where {T,L,R} = L == Open
 is_stop_exclusive(::Interval{T, L, R}) where {T,L,R} = R == Open
 
-function start_index_from_time(sample_rate, interval::Interval, mode)
+function start_index_from_time(sample_rate, interval::Interval, mode::Union{RoundUp, RoundDown})
     first_index, error = index_and_error_from_time(sample_rate, first(interval), mode)
     if is_start_exclusive(interval) && mode == RoundUp && iszero(error)
         first_index += 1
@@ -19,7 +19,7 @@ function start_index_from_time(sample_rate, interval::Interval, mode)
     return first_index
 end
 
-function stop_index_from_time(sample_rate, interval::Interval, mode)
+function stop_index_from_time(sample_rate, interval::Interval, mode::Union{RoundUp, RoundDown})
     last_index, error = index_and_error_from_time(sample_rate, last(interval), mode)
     if is_stop_exclusive(interval) && mode == RoundDown && iszero(error)
         last_index -= 1
