@@ -1,14 +1,17 @@
-# https://github.com/beacon-biosignals/TimeSpans.jl/blob/e3c999021336e51a08d118e6defb792e38ac1cc7/src/TimeSpans.jl#L10
+##
+# Here, we copy a few definitions from TimeSpans.jl in order to not depend on internals
+# https://github.com/beacon-biosignals/TimeSpans.jl/blob/e3c999021336e51a08d118e6defb792e38ac1cc7/src/TimeSpans.jl
+
 const NS_IN_SEC = Dates.value(Nanosecond(Second(1)))  # Number of nanoseconds in one second
 
-# https://github.com/beacon-biosignals/TimeSpans.jl/blob/e3c999021336e51a08d118e6defb792e38ac1cc7/src/TimeSpans.jl#L186
 nanoseconds_per_sample(sample_rate) = inv(sample_rate) * NS_IN_SEC
 
-# https://github.com/beacon-biosignals/TimeSpans.jl/blob/e3c999021336e51a08d118e6defb792e38ac1cc7/src/TimeSpans.jl#L271-L274
 function time_from_index(sample_rate, sample_index)
     sample_index > 0 || throw(ArgumentError("`sample_index` must be > 0"))
     return Nanosecond(ceil(Int, (sample_index - 1) * nanoseconds_per_sample(sample_rate)))
 end
+#
+##
 
 # Helper to get the index and the rounding error in units of time
 function index_and_error_from_time(sample_rate, sample_time::Period, mode::RoundingMode)

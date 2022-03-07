@@ -1,5 +1,8 @@
+#####
+##### StepRange
+#####
 
-# Show we could interop with `StepRange`
+# Show we could interop with `StepRange`, which is another contender for a TimeSpans alternative
 function Base.StepRange(span::AlignedSpans.AlignedSpan)
     # the rounding here is not ideal
     t = Nanosecond(round(Int, TimeSpans.nanoseconds_per_sample(span.sample_rate)))
