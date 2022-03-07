@@ -5,11 +5,26 @@ using TimeSpans, Dates
 export EndpointRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
 export AlignedSpan, consecutive_subspans
 
+"""
+    EndpointRoundingMode(start::RoundingMode, stop::RoundingMode)
+
+Creates a rounding object for [`AlignedSpan`](@ref) to indicate how the `AlignedSpan`'s
+endpoints should be determined from a given `span`s endpoints'.
+"""
 struct EndpointRoundingMode
     start::RoundingMode
     stop::RoundingMode
 end
 
+"""
+    ConstantSamplesRoundingMode(start::RoundingMode)
+
+Creates a rounding object for [`AlignedSpan`](@ref) to indicate the `AlignedSpan`
+should be constructed by the `start` and `duration` of the `span`, without regard to its `stop`.
+
+If two `span`s have the same duration, then the resulting `AlignedSpan`'s will have the same
+number of samples when constructed with this rounding mode.
+"""
 struct ConstantSamplesRoundingMode
     start::RoundingMode
 end
