@@ -1,12 +1,11 @@
 module AlignedSpans
 
-using TimeSpans, Dates, Intervals, Onda
+using Dates, Intervals, Onda
+using TimeSpans: TimeSpans, start, stop, format_duration
+using StructTypes, ArrowTypes
 
 export EndpointRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
 export AlignedSpan, consecutive_subspans
-
-include("conversions.jl")
-
 struct EndpointRoundingMode
     start::RoundingMode
     stop::RoundingMode
@@ -21,22 +20,18 @@ const RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)
 
 struct AlignedSpan
     sample_rate::Float64
-    i::Int
-    j::Int
-    function AlignedSpan(sample_rate::Number, i::Int, j::Int)
-        if j < i
-            throw(ArgumentError("Cannot create `AlignedSpan` with right-endpoint (`j=$j`) strictly smaller than left endpoint (`i=$i`)"))
+    first_index::Int
+    last_index::Int
+    function AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
+        if last_index < first_index
+            throw(ArgumentError("Cannot create `AlignedSpan` with right-endpoint (`last_index=$last_index`) strictly smaller than left endpoint (`first_index=$first_index`)"))
         end
-        return new(convert(Float64, sample_rate), i, j)
+        return new(convert(Float64, sample_rate), first_index, last_index)
     end
 end
 
-start_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.i)
-stop_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.j) # not exclusive!
-
-function Intervals.Interval(span::AlignedSpan)
-    return Interval{Nanosecond, Closed, Closed}(start_time(span), stop_time(span))
-end
+start_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.first_index)
+stop_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.last_index) # not exclusive!
 
 function Base.show(io::IO, w::AlignedSpan)
     start_string = TimeSpans.format_duration(start_time(w))
@@ -44,33 +39,29 @@ function Base.show(io::IO, w::AlignedSpan)
     return print(io, "AlignedSpan(", start_string, ", ", stop_string, ')')
 end
 
-# TimeSpans.jl compat
-to_interval(span) = Interval{Nanosecond, Closed, Open}(start(span), stop(span))
-to_interval(span::Interval) = span
-to_interval(span::AlignedSpan) = Interval(span)
-
-indices(span::AlignedSpan) = (span.i):(span.j)
-
-function Onda.column_arguments(samples::Samples, span::AlignedSpan)
-    span.sample_rate == samples.info.sample_rate || throw(ArgumentError("Sample rate of `samples` ($(samples.info.sample_rate)) does not match sample rate of `AlignedSpan` argument ($(span.sample_rate))."))
-    return indices(span)
-end
+"""
+    start_index_from_time(sample_rate, span, rounding_mode)
 
 
-TimeSpans.istimespan(::AlignedSpan) = false # we don't have same endpoint exclusivity
+"""
+function start_index_from_time end
+
+"""
+    stop_index_from_time(sample_rate, span, rounding_mode)
 
 
-n_samples(aligned::AlignedSpan) = aligned.j - aligned.i + 1
+"""
+function stop_index_from_time end
 
-function n_samples(sample_rate, duration::Period)
-    duration_in_nanoseconds = Dates.value(convert(Nanosecond, duration))
-    duration_in_nanoseconds >= 0 ||
-        throw(ArgumentError("`duration` must be >= 0 nanoseconds"))
-    duration_in_seconds = duration_in_nanoseconds / NS_IN_SEC
-    n_indices = duration_in_seconds * sample_rate
-    return floor(Int, n_indices)
-end
+"""
+    duration(span)
 
+"""
+function duration end
+
+duration(interval::Interval{<:TimePeriod}) = last(interval) - first(interval)
+duration(span) = stop(span) - start(span)
+duration(span::AlignedSpan) = stop_time(span) - start_time(span)
 
 """
     AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
@@ -85,14 +76,16 @@ is exclusive, and if so, incrementing the index after rounding when necessary.
 Likewise, if `mode.start==RoundDown`, then the right index of the resulting span is guaranteed
 to be inside `span`. This is accomplished by checking if the right endpoint of the span
 is exclusive, and if so, decrementing the index after rounding when necessary.
+
+`span` may be of any type which which provides methods for `AlignedSpans.start_index_from_time` and `AlignedSpans.stop_index_from_time`.
 """
 function AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
-    i = start_index_from_time(sample_rate, span, mode.start)
-    j = stop_index_from_time(sample_rate, span, mode.stop)
-    if j < i
+    first_index = start_index_from_time(sample_rate, span, mode.start)
+    last_index = stop_index_from_time(sample_rate, span, mode.stop)
+    if last_index < first_index
         throw(ArgumentError("No samples lie within `span`"))
     end
-    return AlignedSpan(sample_rate, i, j)
+    return AlignedSpan(sample_rate, first_index, last_index)
 end
 
 """
@@ -101,36 +94,18 @@ end
 Creates an `AlignedSpan` whose left endpoint is rounded according to `mode.start`,
 and whose right endpoint is determined so by the left endpoint and the total number of samples,
 given by `AlignedSpans.n_samples(sample_rate, duration(span))`.
+
+`span` may be of any type which which provides a method for `AlignedSpans.start_index_from_time` and `AlignedSpans.duration`.
 """
 function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
-    i = start_index_from_time(sample_rate, span, mode.start)
+    first_index = start_index_from_time(sample_rate, span, mode.start)
     n = n_samples(sample_rate, duration(span))
-    j = i + (n - 1)
-    return AlignedSpan(sample_rate, i, j)
+    last_index = first_index + (n - 1)
+    return AlignedSpan(sample_rate, first_index, last_index)
 end
 
-"""
-    consecutive_subspans(span::AlignedSpan, duration::Period)
-
-Creates an iterator of `AlignedSpan` such that each `AlignedSpan` has consecutive indices
-which cover all of the original `span`'s indices. In particular,
-
-* Each span has `n = n_samples(span.sample_rate, duration)` samples, except possibly
-the last one, which may have fewer.
-* The number of subspans is given by `cld(n_samples(span), n)`
-* The number of samples in the last subspan is `r = rem(n_samples(span), n)` unless `r=0`, in which
-  case the the last subspan has the same number of samples as the rest, namely `n`.
-"""
-function consecutive_subspans(span::AlignedSpan, duration::Period)
-    n = n_samples(span.sample_rate, duration)
-    return consecutive_subspans(span::AlignedSpan, n)
-end
-
-function consecutive_subspans(span::AlignedSpan, n::Int)
-    i = span.i
-    j = span.j
-    rate = span.sample_rate
-    return (AlignedSpan(rate, first(I), last(I)) for I in Iterators.partition(i:j, n))
-end
+include("time_index_conversions.jl")
+include("interop.jl")
+include("utilities.jl")
 
 end

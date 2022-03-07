@@ -100,7 +100,7 @@ end
         subspans = collect(consecutive_subspans(aligned, dur))
         @test length(subspans) == cld(n_samples(aligned), n_samples(sample_rate, dur))
         for i in 1:(length(subspans) - 1)
-            @test subspans[i + 1].i == subspans[i].j + 1 # consecutive indices
+            @test subspans[i + 1].first_index == subspans[i].last_index + 1 # consecutive indices
             @test n_samples(subspans[i]) == n_samples(sample_rate, dur) # each has as many samples as prescribed by the duration
         end
         r = rem(n_samples(aligned), n_samples(sample_rate, dur)) # last one has the remainder
@@ -141,7 +141,7 @@ end
 function Base.StepRange(span::AlignedSpans.AlignedSpan)
     # the rounding here is not ideal
     t = Nanosecond(round(Int, TimeSpans.nanoseconds_per_sample(span.sample_rate)))
-    return (span.i * t):t:(span.j * t)
+    return (span.first_index * t):t:(span.last_index * t)
 end
 
 function AlignedSpan(r::StepRange{T,S}) where {T<:Period,S<:Period}
@@ -157,8 +157,8 @@ end
             span = AlignedSpan(sample_rate, i, j)
             r = StepRange(span)
             span2 = AlignedSpan(r)
-            @test span.i == span2.i
-            @test span.j == span2.j
+            @test span.first_index == span2.first_index
+            @test span.last_index == span2.last_index
             @test span.sample_rate ≈ span2.sample_rate rtol = 1e-7 # annoyingly imprecise...
         end
     end

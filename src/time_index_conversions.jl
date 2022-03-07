@@ -21,23 +21,11 @@ function index_and_error_from_time(sample_rate, sample_time::Period, mode::Round
     return index, time_from_index(sample_rate, index) - sample_time
 end
 
-is_start_exclusive(::Interval{T, L, R}) where {T,L,R} = L == Open
-is_stop_exclusive(::Interval{T, L, R}) where {T,L,R} = R == Open
-
-start_index_from_time(sample_rate, span, mode) = start_index_from_time(sample_rate, to_interval(span), mode)
-function start_index_from_time(sample_rate, interval::Interval, mode)
-    i, error = index_and_error_from_time(sample_rate, first(interval), mode)
-    if is_start_exclusive(interval) && mode == RoundUp && iszero(error)
-        i += 1
-    end
-    return i
-end
-
-stop_index_from_time(sample_rate, span, mode) = stop_index_from_time(sample_rate, to_interval(span), mode)
-function stop_index_from_time(sample_rate, interval::Interval, mode)
-    j, error = index_and_error_from_time(sample_rate, last(interval), mode)
-    if is_stop_exclusive(interval) && mode == RoundDown && iszero(error)
-        j -= 1
-    end
-    return j
+function n_samples(sample_rate, duration::Period)
+    duration_in_nanoseconds = Dates.value(convert(Nanosecond, duration))
+    duration_in_nanoseconds >= 0 ||
+        throw(ArgumentError("`duration` must be >= 0 nanoseconds"))
+    duration_in_seconds = duration_in_nanoseconds / NS_IN_SEC
+    n_indices = duration_in_seconds * sample_rate
+    return floor(Int, n_indices)
 end
