@@ -1,4 +1,3 @@
-
 function test_subspans(aligned, sample_rate, dur)
     subspans = collect(consecutive_subspans(aligned, dur))
     @test length(subspans) == cld(n_samples(aligned), n_samples(sample_rate, dur))

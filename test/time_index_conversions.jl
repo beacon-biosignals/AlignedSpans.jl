@@ -1,4 +1,3 @@
-
 function naive_index_from_time(sample_rate, sample_time)
     # This stepping computation is prone to roundoff error, so we'll work in high precision
     sample_time_in_seconds = big(Dates.value(Nanosecond(sample_time))) //
