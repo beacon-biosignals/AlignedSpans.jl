@@ -128,7 +128,7 @@ given by `AlignedSpans.n_samples(sample_rate, duration(span))`.
 function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
     i = start_index_from_time(sample_rate, span, mode.start)
     n = n_samples(sample_rate, duration(span))
-    j = i + (n - 1)
+    j = i + n - 1
     return AlignedSpan(sample_rate, i, j)
 end
 
