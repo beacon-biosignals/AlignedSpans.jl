@@ -1,9 +1,11 @@
 module AlignedSpans
 
-using TimeSpans, Dates
+using TimeSpans, Dates, Intervals, Onda
 
 export EndpointRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
 export AlignedSpan, consecutive_subspans
+
+include("conversions.jl")
 
 struct EndpointRoundingMode
     start::RoundingMode
@@ -17,13 +19,6 @@ end
 const RoundInward = EndpointRoundingMode(RoundUp, RoundDown)
 const RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)
 
-is_start_exclusive(::TimeSpan) = false
-is_stop_exclusive(::TimeSpan) = true
-
-# using Intervals
-# is_start_exclusive(::Interval{T, L, R}) where {T,L,R} = L == Open
-# is_stop_exclusive(::Interval{T, L, R}) where {T,L,R} = R == Open
-
 struct AlignedSpan
     sample_rate::Float64
     i::Int
@@ -36,51 +31,34 @@ struct AlignedSpan
     end
 end
 
+start_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.i)
+stop_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.j) # not exclusive!
+
+function Intervals.Interval(span::AlignedSpan)
+    return Interval{Nanosecond, Closed, Closed}(start_time(span), stop_time(span))
+end
+
 function Base.show(io::IO, w::AlignedSpan)
-    start_string = TimeSpans.format_duration(start(w))
-    stop_string = TimeSpans.format_duration(stop(w))
+    start_string = TimeSpans.format_duration(start_time(w))
+    stop_string = TimeSpans.format_duration(stop_time(w))
     return print(io, "AlignedSpan(", start_string, ", ", stop_string, ')')
 end
 
-TimeSpans.istimespan(::AlignedSpan) = true
-TimeSpans.start(span::AlignedSpan) = TimeSpans.time_from_index(span.sample_rate, span.i)
+# TimeSpans.jl compat
+to_interval(span) = Interval{Nanosecond, Closed, Open}(start(span), stop(span))
+to_interval(span::Interval) = span
+to_interval(span::AlignedSpan) = Interval(span)
 
-function TimeSpans.stop(span::AlignedSpan)
-     # TimeSpans has a exclusive stop, so we want to be just past our (inclusive) stopping index
-    return TimeSpans.time_from_index(span.sample_rate, span.j) + Nanosecond(1)
+indices(span::AlignedSpan) = (span.i):(span.j)
+
+function Onda.column_arguments(samples::Samples, span::AlignedSpan)
+    span.sample_rate == samples.info.sample_rate || throw(ArgumentError("Sample rate of `samples` ($(samples.info.sample_rate)) does not match sample rate of `AlignedSpan` argument ($(span.sample_rate))."))
+    return indices(span)
 end
 
-function TimeSpans.index_from_time(sample_rate, span::AlignedSpan)
-    if sample_rate != span.sample_rate
-        throw(ArgumentError("The `sample_rate` provided, $(sample_rate) does not match the `span`'s sample rate, $(span.sample_rate)."))
-    end
-    return (span.i):(span.j)
-end
 
-# Interop with `StepRange`
-function Base.StepRange(span::AlignedSpan)
-    # the rounding here is not ideal
-    t = Nanosecond(round(Int, TimeSpans.nanoseconds_per_sample(span.sample_rate)))
-    return (span.i * t):t:(span.j * t)
-end
+TimeSpans.istimespan(::AlignedSpan) = false # we don't have same endpoint exclusivity
 
-function AlignedSpan(r::StepRange{T,S}) where {T<:Period,S<:Period}
-    sample_rate = TimeSpans.NS_IN_SEC / Dates.value(convert(Nanosecond, step(r)))
-    i = first(r) / step(r)
-    j = last(r) / step(r)
-    return AlignedSpan(sample_rate, Int(i), Int(j))
-end
-
-# Helper to get the index and the rounding error in units of time
-function index_and_error_from_time(sample_rate, sample_time::Period, mode::RoundingMode)
-    time_in_nanoseconds = Dates.value(convert(Nanosecond, sample_time))
-    time_in_nanoseconds >= 0 ||
-        throw(ArgumentError("`sample_time` must be >= 0 nanoseconds"))
-    time_in_seconds = time_in_nanoseconds / TimeSpans.NS_IN_SEC
-    floating_index = time_in_seconds * sample_rate + 1
-    index = round(Int, floating_index, mode)
-    return index, TimeSpans.time_from_index(sample_rate, index) - sample_time
-end
 
 n_samples(aligned::AlignedSpan) = aligned.j - aligned.i + 1
 
@@ -88,26 +66,11 @@ function n_samples(sample_rate, duration::Period)
     duration_in_nanoseconds = Dates.value(convert(Nanosecond, duration))
     duration_in_nanoseconds >= 0 ||
         throw(ArgumentError("`duration` must be >= 0 nanoseconds"))
-    duration_in_seconds = duration_in_nanoseconds / TimeSpans.NS_IN_SEC
+    duration_in_seconds = duration_in_nanoseconds / NS_IN_SEC
     n_indices = duration_in_seconds * sample_rate
     return floor(Int, n_indices)
 end
 
-function start_index_from_time(sample_rate, span, mode)
-    i, error = index_and_error_from_time(sample_rate, start(span), mode)
-    if is_start_exclusive(span) && mode == RoundUp && iszero(error)
-        i += 1
-    end
-    return i
-end
-
-function stop_index_from_time(sample_rate, span, mode)
-    j, error = index_and_error_from_time(sample_rate, stop(span), mode)
-    if is_stop_exclusive(span) && mode == RoundDown && iszero(error)
-        j -= 1
-    end
-    return j
-end
 
 """
     AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
