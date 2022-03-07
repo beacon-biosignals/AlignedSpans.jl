@@ -21,6 +21,11 @@ function index_and_error_from_time(sample_rate, sample_time::Period, mode::Round
     return index, time_from_index(sample_rate, index) - sample_time
 end
 
+"""
+    n_samples(sample_rate, duration::Period)
+
+Returns the minimal number of samples that can occur in a span of duration `duration`.
+"""
 function n_samples(sample_rate, duration::Period)
     duration_in_nanoseconds = Dates.value(convert(Nanosecond, duration))
     duration_in_nanoseconds >= 0 ||

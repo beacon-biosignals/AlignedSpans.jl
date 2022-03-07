@@ -43,8 +43,8 @@ What is wrong with this?
 
 Let's take a look at the samples we are plotting:
 ```julia
-julia> samples[:, span]  # TimeSpans v0.2.7+
-Samples (00:00:03.000000000):
+julia> samples[:, span] # TimeSpans v0.2; v0.3 will have one more sample
+Samples (00:00:02.000000000):
   info.kind: "feature"
   info.channels: ["a"]
   info.sample_unit: "microvolt"
@@ -54,8 +54,8 @@ Samples (00:00:03.000000000):
   info.sample_rate: 1 Hz
   encoded: false
   data:
-1×3 Matrix{Int64}:
- 1  2  3
+1×2 Matrix{Int64}:
+ 1  2
 ```
 These are three samples that correspond to times 1s, 2s, and 3s. However, what we gave to the `x`-axis of our plotting function is `TimeSpan(Millisecond(1500), Millisecond(3500))`, which starts at 1.5s and goes to 3.5s. In other words, our plot will have an incorrect 0.5s offset!
 
@@ -74,7 +74,7 @@ This time, we do
 julia> using AlignedSpans
 
 julia> aligned_span = AlignedSpan(samples.info.sample_rate, span, RoundEndsDown)
-AlignedSpan(00:00:01.000000000, 00:00:03.000000001)
+AlignedSpan(00:00:01.000000000, 00:00:03.000000000)
 
 julia> samples[:, aligned_span]
 Samples (00:00:03.000000000):

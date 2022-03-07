@@ -1,6 +1,10 @@
-
 indices(span::AlignedSpan) = (span.first_index):(span.last_index)
 
+"""
+    n_samples(aligned::AlignedSpan)
+
+Returns the number of samples present in the span `aligned`.
+"""
 n_samples(aligned::AlignedSpan) = aligned.last_index - aligned.first_index + 1
 
 """

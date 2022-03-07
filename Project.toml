@@ -12,13 +12,21 @@ StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 TimeSpans = "bb34ddd2-327f-4c4a-bfb0-c98fc494ece1"
 
 [compat]
+Aqua = "0.5.3"
+Arrow = "2.2.0"
+ArrowTypes = "1, 2"
 Intervals = "1.5.0"
+JSON3 = "1.9.3"
 Onda = "0.14"
+StructTypes = "1"
 TimeSpans = "0.2, 0.3"
 julia = "1.6"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+Arrow = "69666777-d1a9-59fb-9406-91d4454c9d45"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test"]
+test = ["Arrow", "JSON3", "Test"]

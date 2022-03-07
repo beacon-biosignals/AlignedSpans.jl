@@ -5,7 +5,8 @@ using TimeSpans: TimeSpans, start, stop, format_duration
 using StructTypes, ArrowTypes
 
 export EndpointRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
-export AlignedSpan, consecutive_subspans
+export AlignedSpan, consecutive_subspans, n_samples
+
 struct EndpointRoundingMode
     start::RoundingMode
     stop::RoundingMode
@@ -43,19 +44,21 @@ end
     start_index_from_time(sample_rate, span, rounding_mode)
 
 
+Returns the index of a sample object obtained by rounding the start of `span` according to `rounding_mode`.
 """
 function start_index_from_time end
 
 """
     stop_index_from_time(sample_rate, span, rounding_mode)
 
-
+Returns the index of a sample object obtained by rounding the stop of `span` according to `rounding_mode`.
 """
 function stop_index_from_time end
 
 """
     duration(span)
 
+Return the duration of `span`.
 """
 function duration end
 
@@ -77,7 +80,7 @@ Likewise, if `mode.start==RoundDown`, then the right index of the resulting span
 to be inside `span`. This is accomplished by checking if the right endpoint of the span
 is exclusive, and if so, decrementing the index after rounding when necessary.
 
-`span` may be of any type which which provides methods for `AlignedSpans.start_index_from_time` and `AlignedSpans.stop_index_from_time`.
+Note: `span` may be of any type which which provides methods for `AlignedSpans.start_index_from_time` and `AlignedSpans.stop_index_from_time`.
 """
 function AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
     first_index = start_index_from_time(sample_rate, span, mode.start)
@@ -95,7 +98,7 @@ Creates an `AlignedSpan` whose left endpoint is rounded according to `mode.start
 and whose right endpoint is determined so by the left endpoint and the total number of samples,
 given by `AlignedSpans.n_samples(sample_rate, duration(span))`.
 
-`span` may be of any type which which provides a method for `AlignedSpans.start_index_from_time` and `AlignedSpans.duration`.
+Note: `span` may be of any type which which provides a method for `AlignedSpans.start_index_from_time` and `AlignedSpans.duration`.
 """
 function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
     first_index = start_index_from_time(sample_rate, span, mode.start)
