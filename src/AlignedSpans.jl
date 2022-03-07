@@ -26,8 +26,8 @@ is_stop_exclusive(::TimeSpan) = true
 
 struct AlignedSpan
     sample_rate::Float64
-    i::Int
-    j::Int
+    i::Int64
+    j::Int64
     function AlignedSpan(sample_rate::Number, i::Int, j::Int)
         if j < i
             throw(ArgumentError("Cannot create `AlignedSpan` with right-endpoint (`j=$j`) strictly smaller than left endpoint (`i=$i`)"))
@@ -55,20 +55,6 @@ function TimeSpans.index_from_time(sample_rate, span::AlignedSpan)
         throw(ArgumentError("The `sample_rate` provided, $(sample_rate) does not match the `span`'s sample rate, $(span.sample_rate)."))
     end
     return (span.i):(span.j)
-end
-
-# Interop with `StepRange`
-function Base.StepRange(span::AlignedSpan)
-    # the rounding here is not ideal
-    t = Nanosecond(round(Int, TimeSpans.nanoseconds_per_sample(span.sample_rate)))
-    return (span.i * t):t:(span.j * t)
-end
-
-function AlignedSpan(r::StepRange{T,S}) where {T<:Period,S<:Period}
-    sample_rate = TimeSpans.NS_IN_SEC / Dates.value(convert(Nanosecond, step(r)))
-    i = first(r) / step(r)
-    j = last(r) / step(r)
-    return AlignedSpan(sample_rate, Int(i), Int(j))
 end
 
 # Helper to get the index and the rounding error in units of time
