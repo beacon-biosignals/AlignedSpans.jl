@@ -30,6 +30,8 @@ should be constructed by the `start` and `duration` of the `span`, without regar
 
 If two `span`s have the same duration, then the resulting `AlignedSpan`'s will have the same
 number of samples when constructed with this rounding mode.
+
+See also [`AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)`](@ref).
 """
 struct ConstantSamplesRoundingMode
     start::RoundingMode
@@ -57,27 +59,30 @@ end
 # Methods for these API functions are provided in `interop.jl`.
 
 """
-    start_index_from_time(sample_rate, span, rounding_mode)
-
+    AlignedSpans.start_index_from_time(sample_rate, span, rounding_mode)
 
 Returns the index of a sample object obtained by rounding the start of `span` according to `rounding_mode`.
+
+See also [`AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)`](@ref) and
+[`AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)`](@ref).
 """
 function start_index_from_time end
 
 """
-    stop_index_from_time(sample_rate, span, rounding_mode)
+    AlignedSpans.stop_index_from_time(sample_rate, span, rounding_mode)
 
 Returns the index of a sample object obtained by rounding the stop of `span` according to `rounding_mode`.
+
+See also [`AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)`](@ref).
 """
 function stop_index_from_time end
 
 """
-    duration(span)
+    AlignedSpans.duration(span)
 
 Return the duration of a continuous-time `span` object.
 
-This function needs to be defined, along with [`start_index_from_time`](@ref), to use
-[`AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)`](@ref)
+See also [`AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)`](@ref)
 """
 function duration end
 

@@ -1,20 +1,22 @@
 # API documentation
 
-## Interface
+```@docs
+AlignedSpans.EndpointRoundingMode
+AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
+AlignedSpans.ConstantSamplesRoundingMode
+AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
+consecutive_subspans
+n_samples
+AlignedSpans.indices
+```
+
+## Interface for conversion from continuous time spans
+
+In order to support conversion of continuous time `span` types to [`AlignedSpan`](@ref)'s,
+three methods may be defined. These are not exported, because they are generally not used directly, but rather defined in order to facilitate use of the [`AlignedSpan`](@ref) constructors.
 
 ```@docs
-AlignedSpan
 AlignedSpans.start_index_from_time
 AlignedSpans.stop_index_from_time
 AlignedSpans.duration
-AlignedSpans.EndpointRoundingMode
-AlignedSpans.ConstantSamplesRoundingMode
-```
-
-## Utilities
-
-```@docs
-n_samples
-AlignedSpans.indices
-consecutive_subspans
 ```

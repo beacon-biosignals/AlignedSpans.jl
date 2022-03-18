@@ -1,5 +1,5 @@
 """
-    indices(span::AlignedSpan) -> UnitRange{Int64}
+    AlignedSpans.indices(span::AlignedSpan) -> UnitRange{Int64}
 
 Returns the sample indices associated to an `AlignedSpan`.
 """
