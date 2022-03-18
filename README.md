@@ -1,7 +1,7 @@
 # AlignedSpans
 
 [![Build Status](https://github.com/beacon-biosignals/AlignedSpans.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/beacon-biosignals/AlignedSpans.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/beacon-biosignals/AlignedSpans.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/beacon-biosignals/AlignedSpans.jl)
+[![codecov](https://codecov.io/gh/beacon-biosignals/AlignedSpans.jl/branch/main/graph/badge.svg?token=2hUEWxFtim)](https://codecov.io/gh/beacon-biosignals/AlignedSpans.jl)
 
 ## Usage
 
