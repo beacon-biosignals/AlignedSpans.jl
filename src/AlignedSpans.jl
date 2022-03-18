@@ -46,15 +46,6 @@ struct AlignedSpan
     end
 end
 
-start_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.first_index)
-stop_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.last_index+1) - Nanosecond(1)
-
-function Base.show(io::IO, w::AlignedSpan)
-    start_string = TimeSpans.format_duration(start_time(w))
-    stop_string = TimeSpans.format_duration(stop_time(w))
-    return print(io, "AlignedSpan(", start_string, ", ", stop_string, ')')
-end
-
 """
     start_index_from_time(sample_rate, span, rounding_mode)
 
@@ -78,8 +69,7 @@ Return the duration of `span`.
 function duration end
 
 duration(interval::Interval{<:TimePeriod}) = last(interval) - first(interval)
-duration(span) = stop(span) - start(span)
-duration(span::AlignedSpan) = stop_time(span) - start_time(span)
+duration(span) = TimeSpans.duration(span)
 
 """
     AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)

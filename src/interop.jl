@@ -2,11 +2,6 @@
 ##### Intervals
 #####
 
-# AlignedSpan -> Interval
-function Intervals.Interval(span::AlignedSpan)
-    return Interval{Nanosecond,Closed,Closed}(start_time(span), stop_time(span))
-end
-
 # Interval -> AlignedSpan
 is_start_exclusive(::Interval{T,L,R}) where {T,L,R} = L == Open
 is_stop_exclusive(::Interval{T,L,R}) where {T,L,R} = R == Open

@@ -5,8 +5,6 @@ using TimeSpans, Dates, Onda, Intervals
 using JSON3, Arrow
 using Aqua
 
-const ClosedNSInterval = Interval{Nanosecond,Closed,Closed}
-
 function make_test_samples(sample_rate)
     return Samples(permutedims([0:100 10:110]),
                    SamplesInfo(; kind="test", channels=["a", "b"], sample_unit="microvolt",
@@ -44,7 +42,6 @@ end
             aligned = AlignedSpan(1, span, RoundInward)
             # Only sample included inside `span` is sample 3
             @test indices(aligned) == 3:3
-            @test Interval(aligned) == ClosedNSInterval(Second(2), Second(2))
         end
 
         # Does *not* contain any samples
@@ -60,19 +57,15 @@ end
             aligned = AlignedSpan(1, span, RoundEndsDown)
             # Only sample included inside `span` is sample 3, but we round left endpoint down
             @test indices(aligned) == 2:3
-            @test Interval(aligned) ==
-                  ClosedNSInterval(Second(1), Second(2))
         end
 
         span = TimeSpan(Millisecond(2000), Millisecond(2001))
         aligned = AlignedSpan(1, span, RoundEndsDown)
         @test indices(aligned) == 3:3
-        @test Interval(aligned) == ClosedNSInterval(Second(2), Second(2))
 
         span = TimeSpan(Millisecond(1999), Millisecond(2000))
         aligned = AlignedSpan(1, span, RoundEndsDown)
         @test indices(aligned) == 2:2
-        @test Interval(aligned) == ClosedNSInterval(Second(1), Second(1))
     end
 
     @testset "ConstantSamplesRoundingMode" begin
