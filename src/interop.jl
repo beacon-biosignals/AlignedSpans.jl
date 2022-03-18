@@ -1,10 +1,13 @@
 #####
-##### Intervals
+##### Intervals -> AlignedSpan
 #####
 
-# Interval -> AlignedSpan
 is_start_exclusive(::Interval{T,L,R}) where {T,L,R} = L == Open
 is_stop_exclusive(::Interval{T,L,R}) where {T,L,R} = R == Open
+
+# Interface methods:
+
+duration(interval::Interval{<:TimePeriod}) = last(interval) - first(interval)
 
 function start_index_from_time(sample_rate, interval::Interval,
                                mode::Union{RoundingMode{:Up},RoundingMode{:Down}})
@@ -35,7 +38,7 @@ function Onda.column_arguments(samples::Samples, span::AlignedSpan)
 end
 
 #####
-##### TimeSpans
+##### TimeSpans -> AlignedSpan
 #####
 
 # We do not support constructing a TimeSpan from an AlignedSpan,
@@ -47,6 +50,10 @@ to_interval(span) = Interval{Nanosecond,Closed,Open}(start(span), stop(span))
 to_interval(span::Interval) = span
 to_interval(span::AlignedSpan) = Interval(span)
 
+# Interface methods:
+
+duration(span) = duration(to_interval(span))
+
 function start_index_from_time(sample_rate, span, mode)
     return start_index_from_time(sample_rate, to_interval(span), mode)
 end
@@ -56,14 +63,10 @@ function stop_index_from_time(sample_rate, span, mode)
 end
 
 #####
-##### StructTypes
+##### Serialization
 #####
 
 StructTypes.StructType(::Type{AlignedSpan}) = StructTypes.Struct()
-
-#####
-##### ArrowTypes
-#####
 
 const ARROW_ALIGNED_SPAN = Symbol("AlignedSpans.AlignedSpan")
 ArrowTypes.arrowname(::Type{AlignedSpan}) = ARROW_ALIGNED_SPAN
