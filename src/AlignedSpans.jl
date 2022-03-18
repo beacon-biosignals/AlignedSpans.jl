@@ -47,7 +47,7 @@ struct AlignedSpan
 end
 
 start_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.first_index)
-stop_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.last_index) # not exclusive!
+stop_time(span::AlignedSpan) = time_from_index(span.sample_rate, span.last_index+1) - Nanosecond(1)
 
 function Base.show(io::IO, w::AlignedSpan)
     start_string = TimeSpans.format_duration(start_time(w))
