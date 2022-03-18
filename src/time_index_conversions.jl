@@ -4,7 +4,8 @@
 
 const NS_IN_SEC = Dates.value(Nanosecond(Second(1)))  # Number of nanoseconds in one second
 
-nanoseconds_per_sample(sample_rate) = inv(sample_rate) * NS_IN_SEC
+# Tweaked from TimeSpans version: https://github.com/beacon-biosignals/AlignedSpans.jl/pull/2#discussion_r829582819
+nanoseconds_per_sample(sample_rate) = NS_IN_SEC / sample_rate
 
 function time_from_index(sample_rate, sample_index)
     sample_index > 0 || throw(ArgumentError("`sample_index` must be > 0"))
