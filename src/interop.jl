@@ -55,6 +55,7 @@ to_interval(span::AlignedSpan) = Interval(span)
 function start_index_from_time(sample_rate, span, mode)
     return start_index_from_time(sample_rate, to_interval(span), mode)
 end
+
 function stop_index_from_time(sample_rate, span, mode)
     return stop_index_from_time(sample_rate, to_interval(span), mode)
 end
