@@ -10,7 +10,7 @@ indices(span::AlignedSpan) = (span.first_index):(span.last_index)
 
 Returns the number of samples present in the span `aligned`.
 """
-n_samples(aligned::AlignedSpan) = aligned.last_index - aligned.first_index + 1
+n_samples(aligned::AlignedSpan) = length(indices(aligned))
 
 """
     consecutive_subspans(span::AlignedSpan, duration::Period)
