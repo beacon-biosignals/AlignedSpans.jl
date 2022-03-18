@@ -1,0 +1,9 @@
+[deps]
+AlignedSpans = "72438786-fd5d-49ef-8843-650acbdfe662"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+Onda = "e853f5be-6863-11e9-128d-476edb89bfb5"
+TimeSpans = "bb34ddd2-327f-4c4a-bfb0-c98fc494ece1"
+
+[compat]
+Documenter = "0.27"
