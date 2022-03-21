@@ -2,6 +2,8 @@
 
 [![Build Status](https://github.com/beacon-biosignals/AlignedSpans.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/beacon-biosignals/AlignedSpans.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/beacon-biosignals/AlignedSpans.jl/branch/main/graph/badge.svg?token=2hUEWxFtim)](https://codecov.io/gh/beacon-biosignals/AlignedSpans.jl)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://beacon-biosignals.github.io/AlignedSpans.jl/stable/)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://beacon-biosignals.github.io/AlignedSpans.jl/dev/)
 
 ## Usage
 
@@ -17,4 +19,4 @@ Rounding options:
 Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
 
 
-See the documentation for more.
+See the [documentation](https://beacon-biosignals.github.io/AlignedSpans.jl/) for more.
