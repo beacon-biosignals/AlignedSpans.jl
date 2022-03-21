@@ -5,7 +5,7 @@
 
 ## Usage
 
-The main object is `AlignedSpan` which takes in a `sample_rate`, a `span`, and a description of how to round time endpoints to indices. This constructs an `AlignedSpan` which satisfies the TimeSpans.jl interface. Internally, an `AlignedSpan` stores indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
+The main object is `AlignedSpan` which takes in a `sample_rate`, a `span`, and a description of how to round time endpoints to indices. This constructs an `AlignedSpan` which supports Onda indexing. Internally, an `AlignedSpan` stores indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
 
 Rounding options:
 
