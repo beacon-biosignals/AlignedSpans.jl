@@ -46,6 +46,8 @@ end
     end
 end
 
+@test TimeSpans.istimespan(AlignedSpan(1, 1, 1))
+
 #####
 ##### Onda
 #####

@@ -74,6 +74,7 @@ end
 
     @testset "ConstantSamplesRoundingMode" begin
         mode = ConstantSamplesRoundingMode(RoundDown)
+
         span = TimeSpan(Millisecond(1500), Millisecond(2500))
         aligned = AlignedSpan(1, span, mode)
         inds = indices(aligned)
@@ -86,9 +87,11 @@ end
             @test length(inds) == n_samples(aligned) == n_samples(1, duration(span))
         end
 
-        span = TimeSpan(Millisecond(1500), Millisecond(2600))
-        aligned = AlignedSpan(1, span, mode)
-        @test indices(aligned) == 2:2
+        for span in (TimeSpan(Millisecond(1500), Millisecond(2600)),
+                     Interval{Nanosecond,Closed,Open}(Millisecond(1500), Millisecond(2600)))
+            aligned = AlignedSpan(1, span, mode)
+            @test indices(aligned) == 2:2
+        end
 
         # We should get the same number of samples no matter how we translate it
         for t in [Millisecond(1):Millisecond(1):Millisecond(1000);
