@@ -42,6 +42,8 @@ end
             aligned = AlignedSpan(1, span, RoundInward)
             # Only sample included inside `span` is sample 3
             @test indices(aligned) == 3:3
+
+            @test TimeSpan(aligned) == TimeSpan(Second(2), Second(3))
         end
 
         # Does *not* contain any samples
@@ -57,6 +59,8 @@ end
             aligned = AlignedSpan(1, span, RoundEndsDown)
             # Only sample included inside `span` is sample 3, but we round left endpoint down
             @test indices(aligned) == 2:3
+
+            @test TimeSpan(aligned) == TimeSpan(Second(1), Second(3))
         end
 
         span = TimeSpan(Millisecond(2000), Millisecond(2001))

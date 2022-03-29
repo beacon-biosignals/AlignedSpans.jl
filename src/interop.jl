@@ -38,12 +38,12 @@ function Onda.column_arguments(samples::Samples, span::AlignedSpan)
 end
 
 #####
-##### TimeSpans -> AlignedSpan
+##### TimeSpans <--> AlignedSpan
 #####
 
-# We do not support constructing a TimeSpan from an AlignedSpan,
-# because we don't have same endpoint exclusivity.
-TimeSpans.istimespan(::AlignedSpan) = false
+TimeSpans.istimespan(::AlignedSpan) = true
+TimeSpans.start(span::AlignedSpan) = time_from_index(span.sample_rate, span.first_index)
+TimeSpans.stop(span::AlignedSpan) = time_from_index(span.sample_rate, span.last_index + 1)
 
 # TimeSpan -> AlignedSpan is supported by passing to Intervals
 to_interval(span) = Interval{Nanosecond,Closed,Open}(start(span), stop(span))
