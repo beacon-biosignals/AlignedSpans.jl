@@ -18,5 +18,5 @@ three methods may be defined. These are not exported, because they are generally
 ```@docs
 AlignedSpans.start_index_from_time
 AlignedSpans.stop_index_from_time
-AlignedSpans.duration
+TimeSpans.duration
 ```

@@ -52,8 +52,8 @@ end
         for i in 1:length(times), j in (i + 1):length(times)
             span = TimeSpan(times[i], times[j])
 
-            if AlignedSpans.duration(span) < Nanosecond(floor(Int, 10^9 * inv(rate)))
-                @test n_samples(rate, AlignedSpans.duration(span)) == 0
+            if duration(span) < Nanosecond(floor(Int, 10^9 * inv(rate)))
+                @test n_samples(rate, TimeSpans.duration(span)) == 0
                 continue
             end
 
@@ -62,10 +62,10 @@ end
             @test n == length(indices(aligned_span))
 
             # `n` is the *actual* number of samples, given the whole span
-            # `n_samples(rate, AlignedSpans.duration(span))` gives us the minimum
+            # `n_samples(rate, TimeSpans.duration(span))` gives us the minimum
             # number of samples of any span of that duration.
             # Thus, we should have:
-            @test n >= n_samples(rate, AlignedSpans.duration(span)) >= n - 1
+            @test n >= n_samples(rate, TimeSpans.duration(span)) >= n - 1
         end
     end
 end

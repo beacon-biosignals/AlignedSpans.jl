@@ -6,6 +6,46 @@ CurrentModule = AlignedSpans
 
 See [API documentation](@ref) for how to construct AlignedSpans, along with some utilities, or below for some examples and motivation.
 
+### Continuous -> Discrete
+
+Continuous timespans can be rounded (or "aligned") to the individual sample values by using the constructor `AlignedSpan`, which takes a `sample_rate`, a `span`, and a description of how to round time endpoints to indices. This constructs an `AlignedSpan` which supports Onda indexing. Internally, an `AlignedSpan` stores indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
+
+Rounding options:
+
+* `EndpointRoundingMode`: consists of a `RoundingMode` for the `start` and `stop` of the span.
+    * The alias `RoundInward = EndpointRoundingMode(RoundUp, RoundDown)`, for example, constructs the largest span (whose endpoints are valid indices) that is entirely contained within `span`.
+    * The alias `RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`.
+* `ConstantSamplesRoundingMode` consists of a `RoundingMode` for the `start` alone. The `stop` is determined from the `start` plus a number of samples which is a function only of the sampling rate and the `duration` of the span.
+
+Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
+
+### Discrete -> Continuous 
+
+AlignedSpan's support `TimeSpans.start` and `TimeSpans.stop`, so they can be used a continuous-time spans. The semantics of this are:
+
+> For any index included in an `AlignedSpan`, the time at which the corresponding sample occurred (inclusive) to the time at which the next sample occurred (exclusive) is associated to the continuous-time representation of the span.
+
+As an example, if the sample rate is 1, and indices `2:3` are associated to a `span`, then the associated `TimeSpan` is `TimeSpan(Second(1), Second(3))`. That's because sample 2 occur at time `Second(1)`, and is considered to "last" until sample 3, which occurs at `Second(2)`. Next, sample 3 occurs at time `Second(2)` and is considered to "last" until sample 4, which occurs at `Second(3)`. Therefore, the total span associated to `2:3` is `Second(1)` to `Second(3)`.
+
+This choice of conversion matches the inclusive-inclusive indexing of Julia integer indices to the inclusive-exclusive semantics of TimeSpans.jl, and allows for roundtripping and sensible durations:
+
+```jldoctest
+julia> aligned = AlignedSpan(1, 2, 3)
+AlignedSpan(1.0, 2, 3)
+
+julia> ts = TimeSpan(aligned)
+TimeSpan(00:00:01.000000000, 00:00:03.000000000)
+
+julia> aligned == AlignedSpan(1, ts, RoundInward)
+true
+
+julia> aligned == AlignedSpan(1, ts, RoundEndsDown)
+true
+
+julia> duration(aligned) == duration(ts) == Second(2)
+true
+```
+
 ## Quick example
 
 Let's consider the following `TimeSpan`

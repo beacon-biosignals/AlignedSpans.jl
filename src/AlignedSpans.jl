@@ -7,6 +7,9 @@ using StructTypes, ArrowTypes
 export EndpointRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
 export AlignedSpan, consecutive_subspans, n_samples
 
+# Make our own method so we can add methods for Intervals without piracy
+duration(span) = TimeSpans.duration(span)
+
 #####
 ##### Types and rounding modes
 #####
@@ -40,6 +43,11 @@ end
 const RoundInward = EndpointRoundingMode(RoundUp, RoundDown)
 const RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)
 
+"""
+    AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
+
+Construct an `AlignedSpan` directly from a `sample_rate` and indices.
+"""
 struct AlignedSpan
     sample_rate::Float64
     first_index::Int64
@@ -77,15 +85,6 @@ See also [`AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)`](@ref).
 """
 function stop_index_from_time end
 
-"""
-    AlignedSpans.duration(span)
-
-Return the duration of a continuous-time `span` object.
-
-See also [`AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)`](@ref)
-"""
-function duration end
-
 #####
 ##### Continuous -> discrete conversions
 #####
@@ -122,13 +121,13 @@ Creates an `AlignedSpan` whose left endpoint is rounded according to `mode.start
 and whose right endpoint is determined so by the left endpoint and the number of samples,
 given by `AlignedSpans.n_samples(sample_rate, duration(span))`.
 
-Interface: `span` may be of any type which which provides a method for [`AlignedSpans.start_index_from_time`](@ref) and [`AlignedSpans.duration`](@ref).
+Interface: `span` may be of any type which which provides a method for [`AlignedSpans.start_index_from_time`](@ref) and [`TimeSpans.duration`](@ref).
 
 ## More detailed information
 
 This is designed so that if `AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)` is applied to multiple `span`s, with the same `sample_rate`, and the same durations, then the resulting `AlignedSpan`'s will have the same number of samples.
 
-For this reason, we ask for `AlignedSpans.duration(span)` to be defined, rather than a `n_samples(span)` function: the idea is that we want to only using the duration and the starting time, rather than the *actual* number of samples in this particular `span`.
+For this reason, we ask for `TimeSpans.duration(span)` to be defined, rather than a `n_samples(span)` function: the idea is that we want to only using the duration and the starting time, rather than the *actual* number of samples in this particular `span`.
 
 In contrast, `AlignedSpan(sample_rate, span, RoundInward)` provides an `AlignedSpan` which includes only (and exactly) the samples contained within `span`.
 
