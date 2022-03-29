@@ -30,7 +30,7 @@ As an example, if the sample rate is 1, and indices `2:3` are associated to a `s
 This choice of conversion matches the inclusive-inclusive indexing of Julia integer indices to the inclusive-exclusive semantics of TimeSpans.jl, and allows for roundtripping and sensible durations:
 
 ```jldoctest
-julia> using AlignedSpans, TimeSpans
+julia> using AlignedSpans, TimeSpans, Dates
 
 julia> aligned = AlignedSpan(1, 2, 3)
 AlignedSpan(1.0, 2, 3)
