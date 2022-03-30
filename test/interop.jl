@@ -30,6 +30,39 @@ end
 end
 
 #####
+##### TimeSpans
+#####
+
+@testset "TimeSpans roundtripping" begin
+    for sample_rate in [1.0, 0.5, 100.0, 128.33]
+        # AlignedSpan -> TimeSpan -> AlignedSpan
+        for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
+            for mode in (RoundSpanDown, RoundInward, ConstantSamplesRoundingMode(RoundDown))
+                as = AlignedSpan(sample_rate, i, j)
+                ts = TimeSpan(as)
+
+                # We don't perfectly roundtrip with sample rate 128.33 for two of the rounding modes.
+                # However, if we widen the timespan by 1 nanosecond, we can roundtrip in that case.
+                # So let's test that, at least.
+                if sample_rate == 128.33
+                    if mode == RoundInward
+                        ts = TimeSpan(max(Nanosecond(0), start(as) - Nanosecond(1)),
+                                      stop(as))
+                    elseif mode == ConstantSamplesRoundingMode(RoundDown)
+                        ts = TimeSpan(start(as), stop(as) + Nanosecond(1))
+                    end
+                end
+
+                rt = AlignedSpan(sample_rate, ts, mode)
+                @test as == rt
+            end
+        end
+    end
+end
+
+@test TimeSpans.istimespan(AlignedSpan(1, 1, 1))
+
+#####
 ##### Onda
 #####
 

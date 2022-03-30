@@ -16,7 +16,7 @@ end
 @testset "consecutive_subspans" begin
     sample_rate = 1
     span = TimeSpan(Second(0), Second(100))
-    aligned = AlignedSpan(sample_rate, span, RoundEndsDown)
+    aligned = AlignedSpan(sample_rate, span, RoundSpanDown)
     @test n_samples(aligned) == 100
 
     # Special case: duration == inv(sampling rate)

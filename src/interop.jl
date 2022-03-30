@@ -6,7 +6,6 @@ is_start_exclusive(::Interval{T,L,R}) where {T,L,R} = L == Open
 is_stop_exclusive(::Interval{T,L,R}) where {T,L,R} = R == Open
 
 # Interface methods:
-
 duration(interval::Interval{<:TimePeriod}) = last(interval) - first(interval)
 
 function start_index_from_time(sample_rate, interval::Interval,
@@ -38,12 +37,12 @@ function Onda.column_arguments(samples::Samples, span::AlignedSpan)
 end
 
 #####
-##### TimeSpans -> AlignedSpan
+##### TimeSpans <--> AlignedSpan
 #####
 
-# We do not support constructing a TimeSpan from an AlignedSpan,
-# because we don't have same endpoint exclusivity.
-TimeSpans.istimespan(::AlignedSpan) = false
+TimeSpans.istimespan(::AlignedSpan) = true
+TimeSpans.start(span::AlignedSpan) = time_from_index(span.sample_rate, span.first_index)
+TimeSpans.stop(span::AlignedSpan) = time_from_index(span.sample_rate, span.last_index + 1)
 
 # TimeSpan -> AlignedSpan is supported by passing to Intervals
 to_interval(span) = Interval{Nanosecond,Closed,Open}(start(span), stop(span))
@@ -51,8 +50,6 @@ to_interval(span::Interval) = span
 to_interval(span::AlignedSpan) = Interval(span)
 
 # Interface methods:
-
-duration(span) = duration(to_interval(span))
 
 function start_index_from_time(sample_rate, span, mode)
     return start_index_from_time(sample_rate, to_interval(span), mode)

@@ -42,6 +42,8 @@ end
             aligned = AlignedSpan(1, span, RoundInward)
             # Only sample included inside `span` is sample 3
             @test indices(aligned) == 3:3
+
+            @test TimeSpan(aligned) == TimeSpan(Second(2), Second(3))
         end
 
         # Does *not* contain any samples
@@ -50,26 +52,29 @@ end
                                                                                RoundInward)
     end
 
-    @testset "RoundEndsDown" begin
+    @testset "RoundSpanDown" begin
         for span in (TimeSpan(Millisecond(1500), Millisecond(2500)),
                      TimeSpan(Millisecond(1001), Millisecond(2001)),
                      TimeSpan(Millisecond(1001), Millisecond(2999)))
-            aligned = AlignedSpan(1, span, RoundEndsDown)
+            aligned = AlignedSpan(1, span, RoundSpanDown)
             # Only sample included inside `span` is sample 3, but we round left endpoint down
             @test indices(aligned) == 2:3
+
+            @test TimeSpan(aligned) == TimeSpan(Second(1), Second(3))
         end
 
         span = TimeSpan(Millisecond(2000), Millisecond(2001))
-        aligned = AlignedSpan(1, span, RoundEndsDown)
+        aligned = AlignedSpan(1, span, RoundSpanDown)
         @test indices(aligned) == 3:3
 
         span = TimeSpan(Millisecond(1999), Millisecond(2000))
-        aligned = AlignedSpan(1, span, RoundEndsDown)
+        aligned = AlignedSpan(1, span, RoundSpanDown)
         @test indices(aligned) == 2:2
     end
 
     @testset "ConstantSamplesRoundingMode" begin
         mode = ConstantSamplesRoundingMode(RoundDown)
+
         span = TimeSpan(Millisecond(1500), Millisecond(2500))
         aligned = AlignedSpan(1, span, mode)
         inds = indices(aligned)
@@ -82,9 +87,11 @@ end
             @test length(inds) == n_samples(aligned) == n_samples(1, duration(span))
         end
 
-        span = TimeSpan(Millisecond(1500), Millisecond(2600))
-        aligned = AlignedSpan(1, span, mode)
-        @test indices(aligned) == 2:2
+        for span in (TimeSpan(Millisecond(1500), Millisecond(2600)),
+                     Interval{Nanosecond,Closed,Open}(Millisecond(1500), Millisecond(2600)))
+            aligned = AlignedSpan(1, span, mode)
+            @test indices(aligned) == 2:2
+        end
 
         # We should get the same number of samples no matter how we translate it
         for t in [Millisecond(1):Millisecond(1):Millisecond(1000);

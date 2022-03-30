@@ -1,8 +1,11 @@
 # API documentation
 
 ```@docs
-AlignedSpans.EndpointRoundingMode
-AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
+AlignedSpan
+AlignedSpans.SpanRoundingMode
+AlignedSpans.RoundInward
+AlignedSpans.RoundSpanDown
+AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
 AlignedSpans.ConstantSamplesRoundingMode
 AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
 consecutive_subspans
@@ -18,5 +21,4 @@ three methods may be defined. These are not exported, because they are generally
 ```@docs
 AlignedSpans.start_index_from_time
 AlignedSpans.stop_index_from_time
-AlignedSpans.duration
 ```
