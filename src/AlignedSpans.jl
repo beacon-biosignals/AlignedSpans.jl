@@ -4,7 +4,7 @@ using Dates, Intervals, Onda
 using TimeSpans: TimeSpans, start, stop, format_duration
 using StructTypes, ArrowTypes
 
-export EndpointRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
+export SpanRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
 export AlignedSpan, consecutive_subspans, n_samples
 
 # Make our own method so we can add methods for Intervals without piracy
@@ -15,12 +15,12 @@ duration(span) = TimeSpans.duration(span)
 #####
 
 """
-    EndpointRoundingMode(start::RoundingMode, stop::RoundingMode)
+    SpanRoundingMode(start::RoundingMode, stop::RoundingMode)
 
 Creates a rounding object for [`AlignedSpan`](@ref) to indicate how the `AlignedSpan`'s
 endpoints should be determined from a given `span`s endpoints'.
 """
-struct EndpointRoundingMode
+struct SpanRoundingMode
     start::RoundingMode
     stop::RoundingMode
 end
@@ -41,7 +41,7 @@ struct ConstantSamplesRoundingMode
 end
 
 """
-    RoundInward = EndpointRoundingMode(RoundUp, RoundDown)
+    RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
 This is a rounding mode where both ends of the continuous time interval are rounded "inwards"
 to construct the largest span of indices such that all samples are entirely contained within it.
@@ -82,10 +82,10 @@ julia> AlignedSpans.indices(aligned)
 ```
 gives an `AlignedSpan` with indices `3:3`.
 """
-const RoundInward = EndpointRoundingMode(RoundUp, RoundDown)
+const RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
 """
-    RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)
+    RoundEndsDown = SpanRoundingMode(RoundDown, RoundDown)
 
 This is a rounding mode where *both* ends of the continuous time interval are rounded
 downwards.
@@ -128,7 +128,7 @@ julia> AlignedSpans.indices(aligned)
 ```
 gives an `AlignedSpan` with indices `2:3`.
 """
-const RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)
+const RoundEndsDown = SpanRoundingMode(RoundDown, RoundDown)
 
 """
     AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
@@ -158,7 +158,7 @@ end
 
 Returns the index of a sample object obtained by rounding the start of `span` according to `rounding_mode`.
 
-See also [`AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)`](@ref) and
+See also [`AlignedSpan(sample_rate, span, mode::SpanRoundingMode)`](@ref) and
 [`AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)`](@ref).
 """
 function start_index_from_time end
@@ -168,7 +168,7 @@ function start_index_from_time end
 
 Returns the index of a sample object obtained by rounding the stop of `span` according to `rounding_mode`.
 
-See also [`AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)`](@ref).
+See also [`AlignedSpan(sample_rate, span, mode::SpanRoundingMode)`](@ref).
 """
 function stop_index_from_time end
 
@@ -177,7 +177,7 @@ function stop_index_from_time end
 #####
 
 """
-    AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
+    AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
 
 Creates an `AlignedSpan` by rounding the left endpoint according to `mode.start`,
 and the right endpoint by `mode.stop`.
@@ -192,7 +192,7 @@ is exclusive, and if so, decrementing the index after rounding when necessary.
 
 Note: `span` may be of any type which which provides methods for `AlignedSpans.start_index_from_time` and `AlignedSpans.stop_index_from_time`.
 """
-function AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
+function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
     first_index = start_index_from_time(sample_rate, span, mode.start)
     last_index = stop_index_from_time(sample_rate, span, mode.stop)
     if last_index < first_index

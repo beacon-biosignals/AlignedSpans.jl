@@ -2,10 +2,10 @@
 
 ```@docs
 AlignedSpan
-AlignedSpans.EndpointRoundingMode
+AlignedSpans.SpanRoundingMode
 AlignedSpans.RoundInward
 AlignedSpans.RoundEndsDown
-AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
+AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
 AlignedSpans.ConstantSamplesRoundingMode
 AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
 consecutive_subspans

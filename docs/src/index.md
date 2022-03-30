@@ -12,9 +12,9 @@ Continuous timespans can be rounded (or "aligned") to the individual sample valu
 
 Rounding options:
 
-* `EndpointRoundingMode`: consists of a `RoundingMode` for the `start` and `stop` of the span.
-    * The alias `RoundInward = EndpointRoundingMode(RoundUp, RoundDown)`, for example, constructs the largest span such that all samples are entirely contained within `span`.
-    * The alias `RoundEndsDown = EndpointRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`.
+* `SpanRoundingMode`: consists of a `RoundingMode` for the `start` and `stop` of the span.
+    * The alias `RoundInward = SpanRoundingMode(RoundUp, RoundDown)`, for example, constructs the largest span such that all samples are entirely contained within `span`.
+    * The alias `RoundEndsDown = SpanRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`.
 * `ConstantSamplesRoundingMode` consists of a `RoundingMode` for the `start` alone. The `stop` is determined from the `start` plus a number of samples which is a function only of the sampling rate and the `duration` of the span.
 
 Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
