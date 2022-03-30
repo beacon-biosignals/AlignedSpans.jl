@@ -27,6 +27,12 @@ AlignedSpan's support `TimeSpans.start` and `TimeSpans.stop`, so they can be use
 
 As an example, if the sample rate is 1, and indices `2:3` are associated to a `span`, then the associated `TimeSpan` is `TimeSpan(Second(1), Second(3))`. That's because sample 2 occur at time `Second(1)`, and is considered to "last" until sample 3, which occurs at `Second(2)`. Next, sample 3 occurs at time `Second(2)` and is considered to "last" until sample 4, which occurs at `Second(3)`. Therefore, the total span associated to `2:3` is `Second(1)` to `Second(3)`.
 
+In diagram form, the inclusive interval of indices `[2, 3]` is associated inclusive-exclusive interval of seconds, `[1, 3)`:
+```
+Index       1   [2    3]    4     5
+Time (s)    0   [1    2     3)    4
+```
+
 This choice of conversion matches the inclusive-inclusive indexing of Julia integer indices to the inclusive-exclusive semantics of TimeSpans.jl, and allows for roundtripping and sensible durations:
 
 ```jldoctest
