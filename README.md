@@ -7,7 +7,7 @@
 
 ## Usage
 
-AlignedSpans exists to help control interconversion between continuous time spans (such as those provided by TimeSpans.jl), and discrete indices, such as those associated to signals sampled at some finite rate (e.g. Onda.jl's `Samples` objects).
+AlignedSpans converts between continuous time spans and discrete sample indices. Time spans describe a time intervals down to a resolution of 1 ns and are usually provided by TimeSpans.jl. Discrete sample indices are associated to signals sampled at some finite rate (e.g. Onda.jl's `Samples` objects). 
 
 AlignedSpans provides an `AlignedSpan` type which holds integer indices along with a sample rate. An `AlignedSpan` is thus an discrete index, but since it holds the sample rate, it can be used to represent a continuous time span as well, and it supports the TimeSpans.jl interface.
 

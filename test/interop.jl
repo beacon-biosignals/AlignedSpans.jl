@@ -40,7 +40,7 @@ end
             for mode in (RoundEndsDown, RoundInward, ConstantSamplesRoundingMode)
                 as = AlignedSpan(sample_rate, i, j)
                 ts = TimeSpan(as)
-                @test as == AlignedSpan(sample_rate, ts, RoundEndsDown)
+                @test as == AlignedSpan(sample_rate, ts, mode)
             end
         end
     end

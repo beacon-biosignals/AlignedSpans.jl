@@ -65,7 +65,7 @@ end
             # `n_samples(rate, TimeSpans.duration(span))` gives us the minimum
             # number of samples of any span of that duration.
             # Thus, we should have:
-            @test n >= n_samples(rate, TimeSpans.duration(span)) >= n - 1
+            @test n >= n_samples(rate, TimeSpans.duration(span)) >= (n - 1)
         end
     end
 end
