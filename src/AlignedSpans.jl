@@ -4,7 +4,7 @@ using Dates, Intervals, Onda
 using TimeSpans: TimeSpans, start, stop, format_duration
 using StructTypes, ArrowTypes
 
-export SpanRoundingMode, RoundInward, RoundEndsDown, ConstantSamplesRoundingMode
+export SpanRoundingMode, RoundInward, RoundSpanDown, ConstantSamplesRoundingMode
 export AlignedSpan, consecutive_subspans, n_samples
 
 # Make our own method so we can add methods for Intervals without piracy
@@ -85,7 +85,7 @@ gives an `AlignedSpan` with indices `3:3`.
 const RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
 """
-    RoundEndsDown = SpanRoundingMode(RoundDown, RoundDown)
+    RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
 
 This is a rounding mode where *both* ends of the continuous time interval are rounded
 downwards.
@@ -109,7 +109,7 @@ Time (s)    0   1  [  2  )  3   4
 
 In code, this span is described by
 
-```jldoctest RoundEndsDown
+```jldoctest RoundSpanDown
 julia> using AlignedSpans, Dates, TimeSpans
 
 julia> ts = TimeSpan(Millisecond(1500), Millisecond(2500))
@@ -119,8 +119,8 @@ TimeSpan(00:00:01.500000000, 00:00:02.500000000)
 If we round both ends of the interval down to the nearest sample,
 the start of the interval becomes 1s, and the stop of the interval
 becomes 2s. Thus, the associated samples are at indices `2:3`. And indeed,
-```jldoctest RoundEndsDown
-julia> aligned = AlignedSpan(1, ts, RoundEndsDown)
+```jldoctest RoundSpanDown
+julia> aligned = AlignedSpan(1, ts, RoundSpanDown)
 AlignedSpan(1.0, 2, 3)
 
 julia> AlignedSpans.indices(aligned)
@@ -128,7 +128,7 @@ julia> AlignedSpans.indices(aligned)
 ```
 gives an `AlignedSpan` with indices `2:3`.
 """
-const RoundEndsDown = SpanRoundingMode(RoundDown, RoundDown)
+const RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
 
 """
     AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)

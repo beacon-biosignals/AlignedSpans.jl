@@ -37,7 +37,7 @@ end
     for sample_rate in [1.0, 0.5, 100.0, 128.33]
         # AlignedSpan -> TimeSpan -> AlignedSpan
         for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
-            for mode in (RoundEndsDown, RoundInward, ConstantSamplesRoundingMode(RoundDown))
+            for mode in (RoundSpanDown, RoundInward, ConstantSamplesRoundingMode(RoundDown))
                 as = AlignedSpan(sample_rate, i, j)
                 ts = TimeSpan(as)
 

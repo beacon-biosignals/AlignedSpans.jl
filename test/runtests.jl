@@ -52,11 +52,11 @@ end
                                                                                RoundInward)
     end
 
-    @testset "RoundEndsDown" begin
+    @testset "RoundSpanDown" begin
         for span in (TimeSpan(Millisecond(1500), Millisecond(2500)),
                      TimeSpan(Millisecond(1001), Millisecond(2001)),
                      TimeSpan(Millisecond(1001), Millisecond(2999)))
-            aligned = AlignedSpan(1, span, RoundEndsDown)
+            aligned = AlignedSpan(1, span, RoundSpanDown)
             # Only sample included inside `span` is sample 3, but we round left endpoint down
             @test indices(aligned) == 2:3
 
@@ -64,11 +64,11 @@ end
         end
 
         span = TimeSpan(Millisecond(2000), Millisecond(2001))
-        aligned = AlignedSpan(1, span, RoundEndsDown)
+        aligned = AlignedSpan(1, span, RoundSpanDown)
         @test indices(aligned) == 3:3
 
         span = TimeSpan(Millisecond(1999), Millisecond(2000))
-        aligned = AlignedSpan(1, span, RoundEndsDown)
+        aligned = AlignedSpan(1, span, RoundSpanDown)
         @test indices(aligned) == 2:2
     end
 

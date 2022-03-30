@@ -14,7 +14,7 @@ Rounding options:
 
 * `SpanRoundingMode`: consists of a `RoundingMode` for the `start` and `stop` of the span.
     * The alias `RoundInward = SpanRoundingMode(RoundUp, RoundDown)`, for example, constructs the largest span such that all samples are entirely contained within `span`.
-    * The alias `RoundEndsDown = SpanRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`.
+    * The alias `RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`.
 * `ConstantSamplesRoundingMode` consists of a `RoundingMode` for the `start` alone. The `stop` is determined from the `start` plus a number of samples which is a function only of the sampling rate and the `duration` of the span.
 
 Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
@@ -47,7 +47,7 @@ TimeSpan(00:00:01.000000000, 00:00:03.000000000)
 julia> aligned == AlignedSpan(1, ts, RoundInward)
 true
 
-julia> aligned == AlignedSpan(1, ts, RoundEndsDown)
+julia> aligned == AlignedSpan(1, ts, RoundSpanDown)
 true
 
 julia> duration(aligned) == duration(ts) == Second(2)
@@ -72,7 +72,7 @@ span = TimeSpan(Millisecond(1500), Millisecond(3500))
 If we have a 1 Hz signal, there are various ways we can index into it using this TimeSpan. One option is to round the endpoints down:
 ```@repl timespan
 
-down_span = AlignedSpan(1, span, RoundEndsDown)
+down_span = AlignedSpan(1, span, RoundSpanDown)
 
 n_samples(down_span)
 ```
@@ -124,7 +124,7 @@ span
 This time, we do
 ```@repl motivation
 using AlignedSpans
-aligned_span = AlignedSpan(samples.info.sample_rate, span, RoundEndsDown)
+aligned_span = AlignedSpan(samples.info.sample_rate, span, RoundSpanDown)
 samples[:, aligned_span]
 ```
 
