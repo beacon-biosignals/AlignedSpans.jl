@@ -208,7 +208,7 @@ Creates an `AlignedSpan` whose left endpoint is rounded according to `mode.start
 and whose right endpoint is determined so by the left endpoint and the number of samples,
 given by `AlignedSpans.n_samples(sample_rate, duration(span))`.
 
-Interface: `span` may be of any type which which provides a method for [`AlignedSpans.start_index_from_time`](@ref) and [`TimeSpans.duration`](@ref).
+Interface: `span` may be of any type which which provides a method for [`AlignedSpans.start_index_from_time`](@ref) and `TimeSpans.duration`.
 
 ## More detailed information
 

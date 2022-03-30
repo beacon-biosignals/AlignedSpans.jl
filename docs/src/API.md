@@ -1,7 +1,10 @@
 # API documentation
 
 ```@docs
+AlignedSpan
 AlignedSpans.EndpointRoundingMode
+AlignedSpans.RoundInward
+AlignedSpans.RoundEndsDown
 AlignedSpan(sample_rate, span, mode::EndpointRoundingMode)
 AlignedSpans.ConstantSamplesRoundingMode
 AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
@@ -18,5 +21,4 @@ three methods may be defined. These are not exported, because they are generally
 ```@docs
 AlignedSpans.start_index_from_time
 AlignedSpans.stop_index_from_time
-TimeSpans.duration
 ```

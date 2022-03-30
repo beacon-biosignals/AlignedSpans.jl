@@ -6,7 +6,7 @@ makedocs(; modules=[AlignedSpans],
          authors="Beacon Biosignals, Inc.",
          pages=["Introduction" => "index.md",
                 "API Documentation" => "API.md"],
-         strict=:doctest)
+         strict=true)
 
 deploydocs(; repo="github.com/beacon-biosignals/AlignedSpans.jl.git",
            devbranch="main",

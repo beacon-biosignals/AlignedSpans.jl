@@ -54,6 +54,12 @@ julia> duration(aligned) == duration(ts) == Second(2)
 true
 ```
 
+!!! warning
+    For non-integer sample rates, roundtripping perfectly is not always possible.
+
+### Note on roundtripping
+
+
 ## Quick example
 
 Let's consider the following `TimeSpan`
