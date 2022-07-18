@@ -13,20 +13,6 @@ function make_test_samples(sample_rate)
                                sample_rate), false)
 end
 
-# Interop with `StepRange`
-function Base.StepRange(span::AlignedSpan)
-    # the rounding here is not ideal
-    t = Nanosecond(round(Int, TimeSpans.nanoseconds_per_sample(span.sample_rate)))
-    return (span.i * t):t:(span.j * t)
-end
-
-function AlignedSpan(r::StepRange{T,S}) where {T<:Period,S<:Period}
-    sample_rate = TimeSpans.NS_IN_SEC / Dates.value(convert(Nanosecond, step(r)))
-    i = first(r) / step(r)
-    j = last(r) / step(r)
-    return AlignedSpan(sample_rate, Int(i), Int(j))
-end
-
 @testset "AlignedSpans.jl" begin
     @testset "Aqua" begin
         Aqua.test_all(AlignedSpans; ambiguities=false)
