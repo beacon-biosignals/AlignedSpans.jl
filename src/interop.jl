@@ -47,7 +47,6 @@ TimeSpans.stop(span::AlignedSpan) = time_from_index(span.sample_rate, span.last_
 # TimeSpan -> AlignedSpan is supported by passing to Intervals
 to_interval(span) = Interval{Nanosecond,Closed,Open}(start(span), stop(span))
 to_interval(span::Interval) = span
-to_interval(span::AlignedSpan) = Interval(span)
 
 # Interface methods:
 

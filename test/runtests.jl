@@ -56,6 +56,9 @@ end
         span = TimeSpan(Millisecond(1999), Millisecond(2000))
         aligned = AlignedSpan(1, span, RoundSpanDown)
         @test indices(aligned) == 2:2
+
+        # Test that we can pass an `AlignedSpan` back into the constructor
+        @test AlignedSpan(1, aligned, RoundSpanDown) == aligned
     end
 
     @testset "ConstantSamplesRoundingMode" begin
