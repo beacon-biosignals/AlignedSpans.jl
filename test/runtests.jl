@@ -18,6 +18,13 @@ end
         Aqua.test_all(AlignedSpans; ambiguities=false)
     end
 
+    @testset "Construction from indices directly" begin
+        @test AlignedSpan(100, 1, 3) == AlignedSpan(100.0, 1, 3)
+        @test_throws ArgumentError AlignedSpan(100, 3, 1) # ends before starts
+        @test AlignedSpan(100, 1, 200) == AlignedSpan(100, 1:200)
+        @test_throws ArgumentError AlignedSpan(100, 3:1) # ends before starts with range constructor
+    end
+
     @testset "RoundInward" begin
         for span in (TimeSpan(Millisecond(1500), Millisecond(2500)),
                      TimeSpan(Millisecond(1001), Millisecond(2001)),
