@@ -145,6 +145,9 @@ struct AlignedSpan
         end
         return new(convert(Float64, sample_rate), first_index, last_index)
     end
+    function AlignedSpan(sample_rate::Number, index_range::UnitRange{Int})
+        return AlignedSpan(sample_rate, first(index_range), last(index_range))
+    end
 end
 
 #####
