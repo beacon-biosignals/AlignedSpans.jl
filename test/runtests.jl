@@ -5,12 +5,21 @@ using TimeSpans, Dates, Onda, Intervals
 using JSON3, Arrow
 using Aqua
 
+if isdefined(Onda, :SignalV2)
+    const _SamplesInfo = SamplesInfoV2
+    const sensor_type_name = :sensor_type
+else
+    const _SamplesInfo = SamplesInfo
+    const sensor_type_name = :kind
+end
+
 function make_test_samples(sample_rate)
     return Samples(permutedims([0:100 10:110]),
-                   SamplesInfo(; kind="test", channels=["a", "b"], sample_unit="microvolt",
-                               sample_resolution_in_unit=0.5, sample_offset_in_unit=0.0,
-                               sample_type=UInt16,
-                               sample_rate), false)
+                   _SamplesInfo(; (sensor_type_name => "test",)...,
+                                channels=["a", "b"], sample_unit="microvolt",
+                                sample_resolution_in_unit=0.5, sample_offset_in_unit=0.0,
+                                sample_type=UInt16,
+                                sample_rate), false)
 end
 
 @testset "AlignedSpans.jl" begin
