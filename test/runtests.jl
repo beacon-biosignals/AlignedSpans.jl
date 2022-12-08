@@ -5,12 +5,12 @@ using TimeSpans, Dates, Onda, Intervals
 using JSON3, Arrow
 using Aqua
 
-@static if isdefined(Onda, :SignalV2)
+if isdefined(Onda, :SignalV2)
     const _SamplesInfo = SamplesInfoV2
-    sensor_type_name = :sensor_type
+    const sensor_type_name = :sensor_type
 else
     const _SamplesInfo = SamplesInfo
-    sensor_type_name = :kind
+    const sensor_type_name = :kind
 end
 
 function make_test_samples(sample_rate)
