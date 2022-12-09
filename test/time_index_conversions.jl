@@ -38,7 +38,7 @@ end
 
 # https://github.com/beacon-biosignals/TimeSpans.jl/blob/e3c999021336e51a08d118e6defb792e38ac1cc7/test/runtests.jl#L93-L96
 @testset "time_from_index" begin
-    @test_throws ArgumentError AlignedSpans.time_from_index(200, 0)
+    @test AlignedSpans.time_from_index(200, 0) == -Millisecond(5)
     @test AlignedSpans.time_from_index(100, 1) == Nanosecond(0)
 end
 
