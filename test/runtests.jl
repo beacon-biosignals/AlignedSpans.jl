@@ -31,6 +31,7 @@ end
         @test AlignedSpan(100, 1, 3) == AlignedSpan(100.0, 1, 3)
         @test_throws ArgumentError AlignedSpan(100, 3, 1) # ends before starts
         @test AlignedSpan(100, 1, 200) == AlignedSpan(100, 1:200)
+        @test AlignedSpan(100, -10, 200) == AlignedSpan(100, -10:200)
         @test_throws ArgumentError AlignedSpan(100, 3:1) # ends before starts with range constructor
     end
 
@@ -48,10 +49,25 @@ end
             @test TimeSpan(aligned) == TimeSpan(Second(2), Second(3))
         end
 
+        # Walk back by 1s each time:
+        aligned = AlignedSpan(1, TimeSpan(Millisecond(-500), Millisecond(500)), RoundInward)
+        @test indices(aligned) == 1:1
+        aligned = AlignedSpan(1, TimeSpan(Millisecond(-1500), Millisecond(-500)),
+                              RoundInward)
+        @test indices(aligned) == 0:0
+        aligned = AlignedSpan(1, TimeSpan(Millisecond(-2500), Millisecond(-1500)),
+                              RoundInward)
+        @test indices(aligned) == -1:-1
+        aligned = AlignedSpan(1, TimeSpan(Millisecond(-3500), Millisecond(-2500)),
+                              RoundInward)
+        @test indices(aligned) == -2:-2
+
         # Does *not* contain any samples
-        span = TimeSpan(Millisecond(1999), Millisecond(2000))
-        @test_throws ArgumentError("No samples lie within `span`") AlignedSpan(1, span,
-                                                                               RoundInward)
+        for span in (TimeSpan(Millisecond(1999), Millisecond(2000)),
+                     TimeSpan(-Millisecond(2001), -Millisecond(2000)))
+            @test_throws ArgumentError("No samples lie within `span`") AlignedSpan(1, span,
+                                                                                   RoundInward)
+        end
     end
 
     @testset "RoundSpanDown" begin
@@ -72,6 +88,14 @@ end
         span = TimeSpan(Millisecond(1999), Millisecond(2000))
         aligned = AlignedSpan(1, span, RoundSpanDown)
         @test indices(aligned) == 2:2
+
+        span = TimeSpan(-Millisecond(2000), -Millisecond(1999))
+        aligned = AlignedSpan(1, span, RoundSpanDown)
+        @test indices(aligned) == -1:-1
+
+        span = TimeSpan(-Millisecond(2001), -Millisecond(2000))
+        aligned = AlignedSpan(1, span, RoundSpanDown)
+        @test indices(aligned) == -2:-2
 
         # Test that we can pass an `AlignedSpan` back into the constructor
         @test AlignedSpan(1, aligned, RoundSpanDown) == aligned
@@ -99,7 +123,7 @@ end
         end
 
         # We should get the same number of samples no matter how we translate it
-        for t in [Millisecond(1):Millisecond(1):Millisecond(1000);
+        for t in [(-Millisecond(2000)):Millisecond(10):Millisecond(1000);
                   Nanosecond(10):Nanosecond(10):Nanosecond(1000)]
             translated_span = TimeSpans.translate(span, t)
             aligned = AlignedSpan(1, translated_span, mode)
