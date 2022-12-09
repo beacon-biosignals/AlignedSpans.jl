@@ -18,7 +18,7 @@ end
 
 @testset "StepRange roundtripping" begin
     for sample_rate in [1.0, 0.5, 100.0, 128.33]
-        for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
+        for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79, -10 => 20]
             span = AlignedSpan(sample_rate, i, j)
             r = StepRange(span)
             span2 = AlignedSpan(r)
@@ -36,7 +36,7 @@ end
 @testset "TimeSpans roundtripping" begin
     for sample_rate in [1.0, 0.5, 100.0, 128.33]
         # AlignedSpan -> TimeSpan -> AlignedSpan
-        for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79]
+        for (i, j) in [1 => 10, 5 => 20, 3 => 6, 78 => 79, -10 => 20]
             for mode in (RoundSpanDown, RoundInward, ConstantSamplesRoundingMode(RoundDown))
                 as = AlignedSpan(sample_rate, i, j)
                 ts = TimeSpan(as)
@@ -46,14 +46,14 @@ end
                 # So let's test that, at least.
                 if sample_rate == 128.33
                     if mode == RoundInward
-                        ts = TimeSpan(max(Nanosecond(0), start(as) - Nanosecond(1)),
-                                      stop(as))
+                        ts = TimeSpan(start(as) - Nanosecond(1), stop(as))
                     elseif mode == ConstantSamplesRoundingMode(RoundDown)
                         ts = TimeSpan(start(as), stop(as) + Nanosecond(1))
                     end
                 end
 
                 rt = AlignedSpan(sample_rate, ts, mode)
+
                 @test as == rt
             end
         end
@@ -73,6 +73,8 @@ end
             @test samples[:, AlignedSpan(sample_rate, i, j)] == samples[:, i:j]
             @test_throws ArgumentError samples[:, AlignedSpan(sample_rate + 1, i, j)]
         end
+
+        @test_throws BoundsError samples[:, AlignedSpan(sample_rate, -5, 10)]
     end
 end
 
@@ -80,7 +82,8 @@ end
 ##### JSON/Arrow
 #####
 
-spans = [AlignedSpan(1.0, 5, 10), AlignedSpan(111.345, 500, 10000)]
+spans = [AlignedSpan(1.0, 5, 10), AlignedSpan(111.345, 500, 10000),
+         AlignedSpan(1.5, -10, 20)]
 @testset "JSON3 roundtripping" begin
     @test JSON3.read(JSON3.write(spans), Vector{AlignedSpan}) == spans
 end
