@@ -8,6 +8,7 @@ const NS_IN_SEC = Dates.value(Nanosecond(Second(1)))  # Number of nanoseconds in
 nanoseconds_per_sample(sample_rate) = NS_IN_SEC / sample_rate
 
 function time_from_index(sample_rate, sample_index)
+    sample_index > 0 || throw(ArgumentError("`sample_index` must be > 0"))
     return Nanosecond(ceil(Int, (sample_index - 1) * nanoseconds_per_sample(sample_rate)))
 end
 #
@@ -16,6 +17,8 @@ end
 # Helper to get the index and the rounding error in units of time
 function index_and_error_from_time(sample_rate, sample_time::Period, mode::RoundingMode)
     time_in_nanoseconds = Dates.value(convert(Nanosecond, sample_time))
+    time_in_nanoseconds >= 0 ||
+        throw(ArgumentError("`sample_time` must be >= 0 nanoseconds"))
     time_in_seconds = time_in_nanoseconds / NS_IN_SEC
     floating_index = time_in_seconds * sample_rate + 1
     index = round(Int, floating_index, mode)
