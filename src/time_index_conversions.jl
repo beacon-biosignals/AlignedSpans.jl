@@ -23,11 +23,11 @@ function index_and_error_from_time(sample_rate, sample_time::Period, mode::Round
 end
 
 """
-    n_samples(sample_rate, duration::Period)
+    n_samples(sample_rate, duration::Union{Period, Dates.CompoundPeriod})
 
-Returns the minimal number of samples that can occur in a span of duration `duration`.
+Returns the minimal number of samples that can occur in a span of `duration`.
 """
-function n_samples(sample_rate, duration::Period)
+function n_samples(sample_rate, duration::Union{Period,Dates.CompoundPeriod})
     duration_in_nanoseconds = Dates.value(convert(Nanosecond, duration))
     duration_in_nanoseconds >= 0 ||
         throw(ArgumentError("`duration` must be >= 0 nanoseconds"))

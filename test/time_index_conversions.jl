@@ -68,4 +68,7 @@ end
             @test n >= n_samples(rate, TimeSpans.duration(span)) >= (n - 1)
         end
     end
+
+    # Compound periods are also handled
+    @test n_samples(1e9, Minute(1) + Nanosecond(1)) == 60 * 1e9 + 1
 end
