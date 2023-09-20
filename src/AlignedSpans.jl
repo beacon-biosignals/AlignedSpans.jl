@@ -5,7 +5,7 @@ using TimeSpans: TimeSpans, start, stop, format_duration
 using StructTypes, ArrowTypes
 
 export SpanRoundingMode, RoundInward, RoundSpanDown, ConstantSamplesRoundingMode
-export AlignedSpan, consecutive_subspans, n_samples
+export AlignedSpan, consecutive_subspans, n_samples, consecutive_overlapping_subspans
 
 # Make our own method so we can add methods for Intervals without piracy
 duration(span) = TimeSpans.duration(span)
