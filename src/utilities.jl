@@ -39,14 +39,12 @@ function consecutive_subspans(span::AlignedSpan, duration::Period; keep_last=tru
 end
 
 function consecutive_subspans(span::AlignedSpan, n_window_samples::Int; keep_last=true)
-    index_groups = Iterators.partition((span.first_index):(span.last_index),
-                                       n_window_samples)
+    index_groups = Iterators.partition(indices(span), n_window_samples)
     if !keep_last
-        r = rem(n_samples(span), n_window_samples)
+        n, r = fldmod(n_samples(span), n_window_samples)
         if r != 0
             # Drop the last element
-            grps = Iterators.take(index_groups, fld(n_samples(span), n_window_samples))
-            return (AlignedSpan(span.sample_rate, first(I), last(I)) for I in grps)
+            index_groups = Iterators.take(index_groups, n)
         end
     end
     return (AlignedSpan(span.sample_rate, first(I), last(I)) for I in index_groups)
@@ -75,8 +73,7 @@ function consecutive_overlapping_subspans(span::AlignedSpan, duration::Period,
                                           hop_duration::Period)
     n_window_samples = n_samples(span.sample_rate, duration)
     n_hop_samples = n_samples(span.sample_rate, hop_duration)
-    return consecutive_overlapping_subspans(span::AlignedSpan, n_window_samples,
-                                            n_hop_samples)
+    return consecutive_overlapping_subspans(span, n_window_samples, n_hop_samples)
 end
 
 function consecutive_overlapping_subspans(span::AlignedSpan, n_window_samples::Int,
