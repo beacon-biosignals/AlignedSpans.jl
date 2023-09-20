@@ -54,11 +54,11 @@ end
 """
     consecutive_overlapping_subspans(span::AlignedSpan, duration::Period,
                                      hop_duration::Period)
-    consecutive_overlapping_subspans(span::AlignedSpan, n::Int, m::Int)
+    consecutive_overlapping_subspans(span::AlignedSpan, n::Int, n_hop_samples::Int)
 
 Create an iterator of `AlignedSpan` such that each `AlignedSpan` has
 `n` (calculated as `n_samples(span.sample_rate, duration)` if `duration::Period` is supplied) samples, shifted by
-`m` (calculated as `n_samples(span.sample_rate, hop_duration)` if `hop_duration::Period` is supplied) samples between
+`n_hop_samples` (calculated as `n_samples(span.sample_rate, hop_duration)` if `hop_duration::Period` is supplied) samples between
 consecutive spans.
 
 !!! warning
@@ -73,13 +73,13 @@ same number of samples. When rounding occurs, the output hop_duration will be:
 function consecutive_overlapping_subspans(span::AlignedSpan, duration::Period,
                                           hop_duration::Period)
     n = n_samples(span.sample_rate, duration)
-    m = n_samples(span.sample_rate, hop_duration)
-    return consecutive_overlapping_subspans(span::AlignedSpan, n, m)
+    n_hop_samples = n_samples(span.sample_rate, hop_duration)
+    return consecutive_overlapping_subspans(span::AlignedSpan, n, n_hop_samples)
 end
 
-function consecutive_overlapping_subspans(span::AlignedSpan, n::Int, m::Int)
+function consecutive_overlapping_subspans(span::AlignedSpan, n::Int, n_hop_samples::Int)
     index_groups = Iterators.partition((span.first_index):(span.last_index - n + 1),
-                                       m)
+                                       n_hop_samples)
     return (AlignedSpan(span.sample_rate, first(I), first(I) + n - 1)
             for I in index_groups)
 end
