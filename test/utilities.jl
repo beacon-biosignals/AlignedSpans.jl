@@ -69,6 +69,11 @@ end
     og_subspans = consecutive_subspans(samples_span, window_samples)
     @test all(collect(subspans) .== collect(og_subspans))
 
+    # Check w/ Period's
+    subspans2 = consecutive_overlapping_subspans(samples_span, Second(10),
+                                                Second(10))
+    @test all(collect(subspans) .== collect(subspans2))
+
     # when window_duration == hop duration but window_duration does not
     # fit evenly into samples_span, consecutive_subspans will return a
     # last AlignedSpan with n_samples < n_samples(window_duration), whereas
@@ -82,6 +87,11 @@ end
     @test length(collect(og_subspans)) - 1 == length(c_subspans)
     @test all(n_samples.(c_subspans) .== window_samples)
 
+    # Check w/ Period's
+    subspans2 = consecutive_overlapping_subspans(samples_span, Second(11),
+                                                Second(11))
+    @test all(collect(subspans) .== collect(subspans2))
+
     # when hop_samples < window_samples
     window_samples = 10 * 128
     hop_samples = 5 * 128
@@ -90,6 +100,11 @@ end
     c_subspans = collect(subspans)
     @test length(c_subspans) == n_complete_windows
     @test all(n_samples.(c_subspans) .== window_samples)
+
+    # Check w/ Period's
+    subspans2 = consecutive_overlapping_subspans(samples_span, Second(10),
+                                                Second(5))
+    @test all(collect(subspans) .== collect(subspans2))
 
     # hop_samples < windows_samples and window_samples does not fit exactly into
     # samples_span
@@ -100,4 +115,9 @@ end
     c_subspans = collect(subspans)
     @test length(c_subspans) == n_complete_windows
     @test all(n_samples.(c_subspans) .== window_samples)
+
+    # Check w/ Period's
+    subspans2 = consecutive_overlapping_subspans(samples_span, Second(11),
+                                                Second(5))
+    @test all(collect(subspans) .== collect(subspans2))
 end
