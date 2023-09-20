@@ -68,7 +68,7 @@ consecutive spans.
 
 Note: If `hop_duration` cannot be represented as an integer number of samples,
 rounding will occur to ensure that all output AlignedSpans will have the
-same number of samples. When rounding occurs, the output hop_duration will be:
+same number of samples. When rounding occurs, the output `hop_duration` will be:
 `Nanosecond(n_samples(samp_rate, hop_duration) / samp_rate * 1e9)`
 """
 function consecutive_overlapping_subspans(span::AlignedSpan, duration::Period,
