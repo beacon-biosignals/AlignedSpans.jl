@@ -9,6 +9,7 @@ AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
 AlignedSpans.ConstantSamplesRoundingMode
 AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
 consecutive_subspans
+consecutive_overlapping_subspans
 n_samples
 AlignedSpans.indices
 ```
