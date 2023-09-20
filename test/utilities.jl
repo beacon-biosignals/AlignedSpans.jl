@@ -72,7 +72,7 @@ end
 
     # Check w/ Period's
     subspans2 = consecutive_overlapping_subspans(samples_span, Second(10),
-                                                Second(10))
+                                                 Second(10))
     @test all(collect(subspans) .== collect(subspans2))
 
     # when window_duration == hop duration but window_duration does not
@@ -90,7 +90,7 @@ end
 
     # Check w/ Period's
     subspans2 = consecutive_overlapping_subspans(samples_span, Second(11),
-                                                Second(11))
+                                                 Second(11))
     @test all(collect(subspans) .== collect(subspans2))
 
     # when hop_samples < window_samples
@@ -104,7 +104,7 @@ end
 
     # Check w/ Period's
     subspans2 = consecutive_overlapping_subspans(samples_span, Second(10),
-                                                Second(5))
+                                                 Second(5))
     @test all(collect(subspans) .== collect(subspans2))
 
     # hop_samples < windows_samples and window_samples does not fit exactly into
@@ -119,6 +119,6 @@ end
 
     # Check w/ Period's
     subspans2 = consecutive_overlapping_subspans(samples_span, Second(11),
-                                                Second(5))
+                                                 Second(5))
     @test all(collect(subspans) .== collect(subspans2))
 end
