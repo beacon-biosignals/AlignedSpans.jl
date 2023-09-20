@@ -16,7 +16,8 @@ function test_subspans(aligned, sample_rate, dur)
     @test subspans[end].last_index == aligned.last_index
 
     # all test w/ `keep_last=false`
-    return test_subspans_skip_last(aligned, sample_rate, dur)
+    test_subspans_skip_last(aligned, sample_rate, dur)
+    return nothing
 end
 
 function test_subspans_skip_last(aligned, sample_rate, dur)
