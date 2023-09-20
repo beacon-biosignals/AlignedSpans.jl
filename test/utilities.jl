@@ -32,6 +32,7 @@ function test_subspans_skip_last(aligned, sample_rate, dur)
     # Does not necessarily end all the way at the end, but gets within `n`
     @test aligned.last_index - n_samples(sample_rate, dur) <= subspans[end].last_index <=
           aligned.last_index
+    return nothing
 end
 
 @testset "consecutive_subspans" begin
