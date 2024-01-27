@@ -1,7 +1,7 @@
 name = "AlignedSpans"
 uuid = "72438786-fd5d-49ef-8843-650acbdfe662"
 authors = ["Beacon Biosignals, Inc."]
-version = "0.2.6"
+version = "0.2.7"
 
 [deps]
 ArrowTypes = "31f734f8-188a-4ce0-8406-c8a06bd891cd"
@@ -19,7 +19,7 @@ Intervals = "1.5.0"
 JSON3 = "1.9.3"
 Onda = "0.14, 0.15"
 StructTypes = "1"
-TimeSpans = "0.2, 0.3"
+TimeSpans = "0.2, 0.3, 1"
 julia = "1.6"
 
 [extras]
