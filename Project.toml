@@ -19,7 +19,7 @@ Intervals = "1.5.0"
 JSON3 = "1.9.3"
 Onda = "0.14, 0.15"
 StructTypes = "1"
-TimeSpans = "0.2, 0.3"
+TimeSpans = "0.2, 0.3, 1"
 julia = "1.6"
 
 [extras]
