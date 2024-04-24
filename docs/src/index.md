@@ -92,7 +92,7 @@ Let's say I want to plot some samples over time, and I have a nice function `plo
 ```@repl motivation
 using TimeSpans, Onda, Dates
 sample_rate = 1 # 1 Hz -> slow to exaggerate the effect
-samples = Samples(permutedims(0:10), SamplesInfoV2("feature", ["a"], "microvolt", 0.5, 0.0, UInt16, sample_rate), false)
+samples = Samples(permutedims(0:10), SamplesInfoV2(; sensor_type="feature", channels=["a"], sample_unit="microvolt", sample_resolution_in_unit=0.5, sample_offset_in_unit=0.0, sample_type=UInt16, sample_rate), false)
 span = TimeSpan(Millisecond(1500), Millisecond(4000))
 ```
 
