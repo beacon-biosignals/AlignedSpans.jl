@@ -6,4 +6,4 @@ Onda = "e853f5be-6863-11e9-128d-476edb89bfb5"
 TimeSpans = "bb34ddd2-327f-4c4a-bfb0-c98fc494ece1"
 
 [compat]
-Documenter = "0.27"
+Documenter = "1"
