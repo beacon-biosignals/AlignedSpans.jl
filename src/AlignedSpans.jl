@@ -44,7 +44,7 @@ end
     RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
 This is a rounding mode where both ends of the continuous time interval are rounded "inwards"
-to construct the largest span of indices such that all samples are occur within it.
+to construct the largest span of indices such that all samples, as instants of time, occur within the span.
 
 ## Example
 
