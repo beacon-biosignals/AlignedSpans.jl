@@ -14,6 +14,13 @@ function start_index_from_time(sample_rate, interval::Interval,
     if is_start_exclusive(interval) && mode == RoundUp && iszero(error)
         first_index += 1
     end
+
+    if mode == RoundUp
+        t = time_from_index(sample_rate, first_index)
+        # this should *always* be true by construction, and we promise it in the docstring.
+        # let's add an assert to verify.
+        @assert t >= first(interval)
+    end
     return first_index
 end
 
@@ -22,6 +29,13 @@ function stop_index_from_time(sample_rate, interval::Interval,
     last_index, error = index_and_error_from_time(sample_rate, last(interval), mode)
     if is_stop_exclusive(interval) && mode == RoundDown && iszero(error)
         last_index -= 1
+    end
+
+    if mode == RoundDown
+        t = time_from_index(sample_rate, last_index)
+        # this should *always* be true by construction, and we promise it in the docstring.
+        # let's add an assert to verify.
+        @assert t <= last(interval)
     end
     return last_index
 end

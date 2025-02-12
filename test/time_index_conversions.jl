@@ -19,10 +19,11 @@ end
 # Modified from
 # https://github.com/beacon-biosignals/TimeSpans.jl/blob/e3c999021336e51a08d118e6defb792e38ac1cc7/test/runtests.jl#L116-L126
 @testset "index_and_error_from_time" begin
-    for rate in (101 // 2, 1001 // 10, 200, 256, 1, 10)
+    for rate in (101 // 2, 1001 // 10, 200, 256, 1, 10, 1 // 30)
         for sample_time in
             (Nanosecond(12345), Minute(5), Nanosecond(Minute(5)) + Nanosecond(1),
-             Nanosecond(1), Nanosecond(10^6), Nanosecond(6970297031))
+             Nanosecond(1), Nanosecond(10^6), Nanosecond(6970297031),
+             Nanosecond(230000000001), Nanosecond(ceil(Int, 10^9 / rate) + 1))
             # compute with a very simple algorithm
             index = naive_index_from_time(rate, sample_time)
             # Check against our `TimeSpans.index_from_time`:
