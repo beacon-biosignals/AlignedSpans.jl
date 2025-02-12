@@ -16,7 +16,8 @@ Rounding options:
     * The alias `RoundInward = SpanRoundingMode(RoundUp, RoundDown)`, for example, constructs the largest span such that all samples are entirely contained within `span`.
     * The alias `RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`.
 * `ConstantSamplesRoundingMode` consists of a `RoundingMode` for the `start` alone. The `stop` is determined from the `start` plus a number of samples which is a function only of the sampling rate and the `duration` of the span.
-* `RoundFullyContainedSampleSpans` TODO
+* `RoundFullyContainedSampleSpans` This is a special rounding mode which differs from the other rounding modes by associating each sample with a _span_ (from the instant the sample occurs until just before the next sample occurs), and rounding
+inwards to the "sample spans" that are fully contained in the input span.
 
 Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
 
