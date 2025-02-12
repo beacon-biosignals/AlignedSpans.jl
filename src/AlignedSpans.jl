@@ -194,32 +194,6 @@ to be inside `span`. This is accomplished by checking if the right endpoint of t
 is exclusive, and if so, decrementing the index after rounding when necessary.
 
 Note: `span` may be of any type which which provides methods for `AlignedSpans.start_index_from_time` and `AlignedSpans.stop_index_from_time`.
-"""
-function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
-    first_index = start_index_from_time(sample_rate, span, mode.start)
-    last_index = stop_index_from_time(sample_rate, span, mode.stop)
-    if last_index < first_index
-        throw(ArgumentError("No samples lie within `span`"))
-    end
-    return AlignedSpan(sample_rate, first_index, last_index)
-end
-
-"""
-    AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
-
-Creates an `AlignedSpan` whose left endpoint is rounded according to `mode.start`,
-and whose right endpoint is determined so by the left endpoint and the number of samples,
-given by `AlignedSpans.n_samples(sample_rate, duration(span))`.
-
-Interface: `span` may be of any type which which provides a method for [`AlignedSpans.start_index_from_time`](@ref) and `TimeSpans.duration`.
-
-## More detailed information
-
-This is designed so that if `AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)` is applied to multiple `span`s, with the same `sample_rate`, and the same durations, then the resulting `AlignedSpan`'s will have the same number of samples.
-
-For this reason, we ask for `TimeSpans.duration(span)` to be defined, rather than a `n_samples(span)` function: the idea is that we want to only using the duration and the starting time, rather than the *actual* number of samples in this particular `span`.
-
-In contrast, `AlignedSpan(sample_rate, span, RoundInward)` provides an `AlignedSpan` which includes only (and exactly) the samples which occur within `span`.
 
 !!! warning
     If the input `span` is not sample-aligned, meaning the `start` and `stop` of the input span are not exact multiples of the sample rate, the results can be non-intuitive at first. Each underlying sample is considered to occur at some instant in time (not, e.g. over a span of duration of `1/sample_rate`), and the rounding is relative to the samples themselves.
@@ -256,6 +230,33 @@ In contrast, `AlignedSpan(sample_rate, span, RoundInward)` provides an `AlignedS
     AlignedSpans could make a different choice to e.g. canonicalize samples to only add an additional nanosecond,
     but that has its own issue (e.g. `TimeSpan(AlignedSpan(sample_rate, 1, 2))` and `TimeSpan(AlignedSpan(sample_rate, 3, 4))` would not be consecutive).
     
+"""
+function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
+    first_index = start_index_from_time(sample_rate, span, mode.start)
+    last_index = stop_index_from_time(sample_rate, span, mode.stop)
+    if last_index < first_index
+        throw(ArgumentError("No samples lie within `span`"))
+    end
+    return AlignedSpan(sample_rate, first_index, last_index)
+end
+
+"""
+    AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
+
+Creates an `AlignedSpan` whose left endpoint is rounded according to `mode.start`,
+and whose right endpoint is determined so by the left endpoint and the number of samples,
+given by `AlignedSpans.n_samples(sample_rate, duration(span))`.
+
+Interface: `span` may be of any type which which provides a method for [`AlignedSpans.start_index_from_time`](@ref) and `TimeSpans.duration`.
+
+## More detailed information
+
+This is designed so that if `AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)` is applied to multiple `span`s, with the same `sample_rate`, and the same durations, then the resulting `AlignedSpan`'s will have the same number of samples.
+
+For this reason, we ask for `TimeSpans.duration(span)` to be defined, rather than a `n_samples(span)` function: the idea is that we want to only using the duration and the starting time, rather than the *actual* number of samples in this particular `span`.
+
+In contrast, `AlignedSpan(sample_rate, span, RoundInward)` provides an `AlignedSpan` which includes only (and exactly) the samples which occur within `span`.
+
 If one wants to create a collection of consecutive, non-overlapping, `AlignedSpans` each with the same number of samples, then use [`consecutive_subspans`](@ref) instead.
 """
 function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
