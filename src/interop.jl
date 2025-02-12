@@ -40,6 +40,18 @@ function stop_index_from_time(sample_rate, interval::Interval,
     return last_index
 end
 
+function stop_index_from_time(sample_rate, interval::Interval, ::RoundInwardSpans)
+    last_index, error = index_and_error_from_time(sample_rate, last(interval), RoundDown)
+    
+    if time_from_index(sample_rate, last_index + 1) >= last(interval)
+        last_index -= 1
+    end
+
+    t = time_from_index(sample_rate, last_index + 1)
+    @assert t <= last(interval)
+    return last_index
+end
+
 #####
 ##### Onda
 #####

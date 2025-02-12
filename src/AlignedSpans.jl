@@ -44,7 +44,7 @@ end
     RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
 This is a rounding mode where both ends of the continuous time interval are rounded "inwards"
-to construct the largest span of indices such that all samples are entirely contained within it.
+to construct the largest span of indices such that all samples are occur within it.
 
 ## Example
 
@@ -129,6 +129,14 @@ julia> AlignedSpans.indices(aligned)
 gives an `AlignedSpan` with indices `2:3`.
 """
 const RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
+
+struct RoundInwardSpans end
+function Base.getproperty(inw::RoundInwardSpans, property::Symbol)
+    property === :start && return RoundDown
+    property === :stop && return inw
+    # throw the correct error
+    getfield(inw, property)
+end
 
 """
     AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
@@ -225,7 +233,7 @@ In contrast, `AlignedSpan(sample_rate, span, RoundInward)` provides an `AlignedS
     If the input `span` is not sample-aligned, meaning the `start` and `stop` of the input span are not exact multiples of the sample rate, the results can be non-intuitive at first. Each underlying sample is considered to occur at some instant in time (not, e.g. over a span of duration of `1/sample_rate`), and the rounding is relative to the samples themselves.
 
     So for example:
-        
+
     ```jldoctest
     julia> using TimeSpans, AlignedSpans, Dates
 
