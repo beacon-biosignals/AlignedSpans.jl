@@ -62,6 +62,10 @@ end
     aligned = AlignedSpan(1 / 30, input, RoundFullyContainedSampleSpans)
     @test aligned == AlignedSpan(1 / 30, 1, 2)
 
+    input = TimeSpan(0, Second(60))
+    aligned = AlignedSpan(1 / 30, input, RoundFullyContainedSampleSpans)
+    @test aligned == AlignedSpan(1 / 30, 1, 2)
+
     # No spans contained
     input = TimeSpan(Nanosecond(1), Second(30) + Nanosecond(1))
     @test_throws ArgumentError AlignedSpan(1 / 30, input, RoundFullyContainedSampleSpans)

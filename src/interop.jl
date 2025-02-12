@@ -42,13 +42,24 @@ end
 
 function stop_index_from_time(sample_rate, interval::Interval,
                               ::RoundingModeFullyContainedSampleSpans)
-    last_index, error = index_and_error_from_time(sample_rate, last(interval), RoundDown)
-    if time_from_index(sample_rate, last_index + 1) >= last(interval)
+    # here we are in `RoundingModeFullyContainedSampleSpans` which means we treat each sample
+    # as a closed-open span starting from each sample to just before the next sample,
+    # and we are trying to round down to the last fully-enclosed sample span
+    last_index, _ = index_and_error_from_time(sample_rate, last(interval), RoundDown)
+
+    # `time_from_index(sample_rate, last_index + 1)` gives us the _start_ of the next sample
+    # we subtract 1 ns to get the (inclusive) _end_ of the span associated to this sample
+    end_of_span_time = time_from_index(sample_rate, last_index + 1) - Nanosecond(1)
+    
+    # if this end isn't fully included in the interval, then we need to go back one
+    if !(end_of_span_time in interval)
+        @debug "Decrementing last index to fully fit within span"
         last_index -= 1
     end
 
-    t = time_from_index(sample_rate, last_index + 1)
-    @assert t <= last(interval)
+    # We should never need to decrement twice, but we will assert this
+    end_of_span_time = time_from_index(sample_rate, last_index + 1) - Nanosecond(1)
+    @assert end_of_span_time in interval
     return last_index
 end
 
