@@ -319,7 +319,7 @@ This is designed so that if `AlignedSpan(sample_rate, span, mode::ConstantSample
 
 For this reason, we ask for `TimeSpans.duration(span)` to be defined, rather than a `n_samples(span)` function: the idea is that we want to only using the duration and the starting time, rather than the *actual* number of samples in this particular `span`.
 
-In contrast, [`AlignedSpan(sample_rate, span, ::RoundInward)`](@ref) provides an `AlignedSpan` which includes only (and exactly) the samples which occur within `span`, while [`AlignedSpan(sample_rate, span, ::RoundingModeFullyContainedSampleSpans)`](@ref) provides an `AlignedSpan` consisting of the full spans from each sample until the next sample occurs that are contained in the input span.
+In contrast, [`RoundInward`](@ref) provides an `AlignedSpan` which includes only (and exactly) the samples which occur within `span`, while [`AlignedSpan(sample_rate, span, ::RoundingModeFullyContainedSampleSpans)`](@ref) provides an `AlignedSpan` consisting of the full spans from each sample until the next sample occurs that are contained in the input span.
 
 If one wants to create a collection of consecutive, non-overlapping, `AlignedSpans` each with the same number of samples, then use [`consecutive_subspans`](@ref) instead.
 """
