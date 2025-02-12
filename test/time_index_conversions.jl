@@ -37,6 +37,36 @@ end
     end
 end
 
+@testset "RoundFullyContainedSampleSpans" begin
+    input = TimeSpan(0, Second(30))
+    aligned = AlignedSpan(1/30, input, RoundFullyContainedSampleSpans)
+    @test aligned == AlignedSpan(1/30, 1, 1)
+
+    input = TimeSpan(0, Second(30) + Nanosecond(1))
+    aligned = AlignedSpan(1/30, input, RoundFullyContainedSampleSpans)
+    @test aligned == AlignedSpan(1/30, 1, 1)
+
+    input = TimeSpan(0, Second(59))
+    aligned = AlignedSpan(1/30, input, RoundFullyContainedSampleSpans)
+    @test aligned == AlignedSpan(1/30, 1, 1)
+
+    input = TimeSpan(0, Second(60))
+    aligned = AlignedSpan(1/30, input, RoundFullyContainedSampleSpans)
+    @test aligned == AlignedSpan(1/30, 1, 2)
+
+    input = TimeSpan(Nanosecond(1), Second(60) + Nanosecond(1))
+    aligned = AlignedSpan(1/30, input, RoundFullyContainedSampleSpans)
+    @test aligned == AlignedSpan(1/30, 2, 2)
+
+    input = TimeSpan(0, Second(60) + Nanosecond(1))
+    aligned = AlignedSpan(1/30, input, RoundFullyContainedSampleSpans)
+    @test aligned == AlignedSpan(1/30, 1, 2)
+
+    # No spans contained
+    input = TimeSpan(Nanosecond(1), Second(30) + Nanosecond(1))
+    @test_throws ArgumentError AlignedSpan(1/30, input, RoundFullyContainedSampleSpans)
+end
+
 # https://github.com/beacon-biosignals/TimeSpans.jl/blob/e3c999021336e51a08d118e6defb792e38ac1cc7/test/runtests.jl#L93-L96
 @testset "time_from_index" begin
     @test AlignedSpans.time_from_index(200, 0) == -Millisecond(5)

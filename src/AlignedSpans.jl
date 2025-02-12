@@ -357,7 +357,7 @@ since only one 30s-long "sample span" is fully included in the input span.
 
 """
 function AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSampleSpans)
-    first_index = start_index_from_time(sample_rate, span, RoundDown)
+    first_index = start_index_from_time(sample_rate, span, RoundUp)
     last_index = stop_index_from_time(sample_rate, span, mode)
     if last_index < first_index
         throw(ArgumentError("No samples lie within `span`"))
