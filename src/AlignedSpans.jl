@@ -4,7 +4,7 @@ using Dates, Intervals, Onda
 using TimeSpans: TimeSpans, start, stop, format_duration
 using StructTypes, ArrowTypes
 
-export SpanRoundingMode, RoundInward, RoundSpanDown, ConstantSamplesRoundingMode
+export SpanRoundingMode, RoundInward, RoundSpanDown, ConstantSamplesRoundingMode, RoundFullyContainedSampleSpans
 export AlignedSpan, consecutive_subspans, n_samples, consecutive_overlapping_subspans
 
 # Make our own method so we can add methods for Intervals without piracy
@@ -130,13 +130,73 @@ gives an `AlignedSpan` with indices `2:3`.
 """
 const RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
 
-struct RoundInwardSpans end
-function Base.getproperty(inw::RoundInwardSpans, property::Symbol)
-    property === :start && return RoundDown
+struct RoundingModeFullyContainedSampleSpans end
+function Base.getproperty(inw::RoundingModeFullyContainedSampleSpans, property::Symbol)
+    property === :start && return RoundUp
     property === :stop && return inw
     # throw the correct error
     getfield(inw, property)
 end
+
+"""
+    RoundFullyContainedSampleSpans
+
+This is a special rounding mode which differs from the other rounding modes by associating each sample
+with a _span_ (from the instant the sample occurs until just before the next sample occurs), and rounding
+inwards to the "sample spans" that are fully contained in the input span.
+
+This is in some sense a stricter form of inward rounding than provided by [`RoundInward`](@ref).
+
+## Example
+
+Consider a signal with sample rate 1 Hz.
+
+```
+Index       1   2   3   4   5
+Time (s)    0   1   2   3   4
+```
+
+Normally, we consider each sample to occur at an instant of time. For `RoundFullyContainedSampleSpans`,
+we consider the span between a sample occurring and the next sample. (This usually does not make sense for digital sensors,
+but can make sense for things like hypnograms in which a sample summarizes some region of time).
+
+Thus, to each index (each sample), we associate a 1s closed-open span of time:
+```
+Index        1     2     3     4     5
+Span (s)    [0   )[1   )[2   )[3   )[4    )
+```
+The span durations are `1/sample_rate`, which is 1s in this example.
+
+Now, consider the input time span 1.5s (inclusive) to 3.5s (exclusive).
+Using brackets to highlight this span:
+
+```
+Index        1     2     3     4     5
+Span (s)    [0   )[1   )[2   )[3   )[4    )
+Time (s)     0     1  [  2     3  )  4
+```
+
+This input span contains only one sample-span, namely `[2s, 3s)`. The span from `[1s, 2)` is not fully contained,
+nor is the span from `[3s, 4s)`.
+
+Thus, in this scenario, `RoundFullyContainedSampleSpans` would give a single sample, that at index 3, associated to `[2s, 3s)`.
+
+In code, this span is described by
+
+```jldoctest RoundFullyContainedSampleSpans
+julia> using AlignedSpans, Dates, TimeSpans
+
+julia> ts = TimeSpan(Millisecond(1500), Millisecond(3500))
+TimeSpan(00:00:01.500000000, 00:00:03.500000000)
+
+julia> aligned = AlignedSpan(1, ts, RoundFullyContainedSampleSpans)
+AlignedSpan(1.0, 3, 3)
+
+julia> AlignedSpans.indices(aligned)
+3:3
+```
+"""
+const RoundFullyContainedSampleSpans = RoundingModeFullyContainedSampleSpans()
 
 """
     AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
@@ -188,7 +248,7 @@ function stop_index_from_time end
 #####
 
 """
-    AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
+    AlignedSpan(sample_rate, span, mode::Union{SpanRoundingMode, RoundingModeFullyContainedSampleSpans})
 
 Creates an `AlignedSpan` by rounding the left endpoint according to `mode.start`,
 and the right endpoint by `mode.stop`.
@@ -203,7 +263,7 @@ is exclusive, and if so, decrementing the index after rounding when necessary.
 
 Note: `span` may be of any type which which provides methods for `AlignedSpans.start_index_from_time` and `AlignedSpans.stop_index_from_time`.
 """
-function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
+function AlignedSpan(sample_rate, span, mode::Union{SpanRoundingMode, RoundingModeFullyContainedSampleSpans})
     first_index = start_index_from_time(sample_rate, span, mode.start)
     last_index = stop_index_from_time(sample_rate, span, mode.stop)
     if last_index < first_index
