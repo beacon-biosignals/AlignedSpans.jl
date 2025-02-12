@@ -50,7 +50,6 @@ function stop_index_from_time(sample_rate, interval::Interval,
     # `time_from_index(sample_rate, last_index + 1)` gives us the _start_ of the next sample
     # we subtract 1 ns to get the (inclusive) _end_ of the span associated to this sample
     end_of_span_time = time_from_index(sample_rate, last_index + 1) - Nanosecond(1)
-    
     # if this end isn't fully included in the interval, then we need to go back one
     if !(end_of_span_time in interval)
         @debug "Decrementing last index to fully fit within span"
