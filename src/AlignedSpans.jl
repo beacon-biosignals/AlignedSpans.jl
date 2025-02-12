@@ -4,7 +4,8 @@ using Dates, Intervals, Onda
 using TimeSpans: TimeSpans, start, stop, format_duration
 using StructTypes, ArrowTypes
 
-export SpanRoundingMode, RoundInward, RoundSpanDown, ConstantSamplesRoundingMode, RoundFullyContainedSampleSpans
+export SpanRoundingMode, RoundInward, RoundSpanDown, ConstantSamplesRoundingMode,
+       RoundFullyContainedSampleSpans
 export AlignedSpan, consecutive_subspans, n_samples, consecutive_overlapping_subspans
 
 # Make our own method so we can add methods for Intervals without piracy
@@ -328,7 +329,6 @@ function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
     last_index = first_index + n - 1
     return AlignedSpan(sample_rate, first_index, last_index)
 end
-
 
 """
     AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSampleSpans)
