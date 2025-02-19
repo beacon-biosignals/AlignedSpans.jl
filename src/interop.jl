@@ -18,8 +18,24 @@ function start_index_from_time(sample_rate, interval::Interval,
     if mode == RoundUp
         t = time_from_index(sample_rate, first_index)
         # this should *always* be true by construction, and we promise it in the docstring.
-        # let's add an assert to verify.
-        @assert t >= first(interval)
+        # let's add an check to verify.
+        if !(t >= first(interval))
+            msg = """
+            [AlignedSpans] Unexpected error in `start_index_from_time`:
+
+            - `time_from_index(sample_rate, first_index) = $(t)`
+            - `first(interval) = $(first(interval))`
+            - Expected `time_from_index(sample_rate, first_index) >= first(interval)`
+
+            Please file an issue on AlignedSpans.jl: https://github.com/beacon-biosignals/AlignedSpans.jl/issues/new
+            """
+
+            if ASSERTS_ON[]
+                error(msg)
+            else
+                @warn msg
+            end
+        end
     end
     return first_index
 end
@@ -34,8 +50,24 @@ function stop_index_from_time(sample_rate, interval::Interval,
     if mode == RoundDown
         t = time_from_index(sample_rate, last_index)
         # this should *always* be true by construction, and we promise it in the docstring.
-        # let's add an assert to verify.
-        @assert t <= last(interval)
+        # let's add an check to verify.
+        if !(t <= last(interval))
+            msg = """
+            [AlignedSpans] Unexpected error in `stop_index_from_time`:
+
+            - `time_from_index(sample_rate, last_index) = $(t)`
+            - `last(interval) = $(last(interval))`
+            - Expected `time_from_index(sample_rate, last_index) <= last(interval)`
+
+            Please file an issue on AlignedSpans.jl: https://github.com/beacon-biosignals/AlignedSpans.jl/issues/new
+            """
+
+            if ASSERTS_ON[]
+                error(msg)
+            else
+                @warn msg
+            end
+        end
     end
     return last_index
 end

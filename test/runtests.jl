@@ -13,6 +13,9 @@ else
     const sensor_type_name = :kind
 end
 
+# turn on "asserts" so we get errors if invariants are violated
+AlignedSpans.ASSERTS_ON[] = true
+
 function make_test_samples(sample_rate)
     return Samples(permutedims([0:100 10:110]),
                    _SamplesInfo(; (sensor_type_name => "test",)...,
