@@ -4,7 +4,8 @@ using Dates, Intervals, Onda
 using TimeSpans: TimeSpans, start, stop, format_duration
 using StructTypes, ArrowTypes
 
-export SpanRoundingMode, RoundInward, RoundSpanDown, ConstantSamplesRoundingMode
+export SpanRoundingMode, RoundInward, RoundSpanDown, ConstantSamplesRoundingMode,
+       RoundFullyContainedSampleSpans
 export AlignedSpan, consecutive_subspans, n_samples, consecutive_overlapping_subspans
 
 # Make our own method so we can add methods for Intervals without piracy
@@ -132,6 +133,68 @@ gives an `AlignedSpan` with indices `2:3`.
 """
 const RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
 
+struct RoundingModeFullyContainedSampleSpans end
+
+"""
+    RoundFullyContainedSampleSpans
+
+This is a special rounding mode which differs from the other rounding modes by associating each sample
+with a _span_ (from the instant the sample occurs until just before the next sample occurs), and rounding
+inwards to the "sample spans" that are fully contained in the input span.
+
+This is in some sense a stricter form of inward rounding than provided by [`RoundInward`](@ref).
+
+## Example
+
+Consider a signal with sample rate 1 Hz.
+
+```
+Index       1   2   3   4   5
+Time (s)    0   1   2   3   4
+```
+
+Normally, we consider each sample to occur at an instant of time. For `RoundFullyContainedSampleSpans`,
+we consider the span between a sample occurring and the next sample. (This usually does not make sense for digital sensors,
+but can make sense for things like hypnograms in which a sample summarizes some region of time).
+
+Thus, to each index (each sample), we associate a 1s closed-open span of time:
+```
+Index        1     2     3     4     5
+Span (s)    [0   )[1   )[2   )[3   )[4    )
+```
+The span durations are `1/sample_rate`, which is 1s in this example.
+
+Now, consider the input time span 1.5s (inclusive) to 3.5s (exclusive).
+Using brackets to highlight this span:
+
+```
+Index        1     2     3     4     5
+Span (s)    [0   )[1   )[2   )[3   )[4    )
+Time (s)     0     1  [  2     3  )  4
+```
+
+This input span contains only one sample-span, namely `[2s, 3s)`. The span from `[1s, 2)` is not fully contained,
+nor is the span from `[3s, 4s)`.
+
+Thus, in this scenario, `RoundFullyContainedSampleSpans` would give a single sample, that at index 3, associated to `[2s, 3s)`.
+
+In code, this span is described by
+
+```jldoctest RoundFullyContainedSampleSpans
+julia> using AlignedSpans, Dates, TimeSpans
+
+julia> ts = TimeSpan(Millisecond(1500), Millisecond(3500))
+TimeSpan(00:00:01.500000000, 00:00:03.500000000)
+
+julia> aligned = AlignedSpan(1, ts, RoundFullyContainedSampleSpans)
+AlignedSpan(1.0, 3, 3)
+
+julia> AlignedSpans.indices(aligned)
+3:3
+```
+"""
+const RoundFullyContainedSampleSpans = RoundingModeFullyContainedSampleSpans()
+
 """
     AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
 
@@ -201,7 +264,7 @@ Note: `span` may be of any type which which provides methods for `AlignedSpans.s
     If the input `span` is not sample-aligned, meaning the `start` and `stop` of the input span are not exact multiples of the sample rate, the results can be non-intuitive at first. Each underlying sample is considered to occur at some instant in time (not, e.g. over a span of duration of `1/sample_rate`), and the rounding is relative to the samples themselves.
 
     So for example:
-        
+
     ```jldoctest
     julia> using TimeSpans, AlignedSpans, Dates
 
@@ -224,7 +287,7 @@ Note: `span` may be of any type which which provides methods for `AlignedSpans.s
     How can this be? Clearly `Second(60) > Second(30) + Nanosecond(1)`, so what is going on?
 
     To understand this, note that at 1/30Hz, the samples occur at 00:00, 00:30, 00:60, and so forth. The original input span
-    includes _two_ samples, the one at 00:00 and the one at 00:30. Rounding inward to include only samples that occur within the span means including both samples.
+    includes _two_ samples, the one at 00:00 and the one at 00:30. Rounding inward to include only samples that occur within the span means including both samples (see [`RoundFullyContainedSampleSpans`](@ref) for alternate behavior).
 
     When converting back to TimeSpans, AlignedSpans canonicalizes `AlignedSpan(1/30, 1, 2)` as `TimeSpan(0, Second(60))`,
     representing these two samples as the time from the first sample until just before the not-included sample-3 (which occurs at `Second(60)`), using that `TimeSpan`'s exclude their right endpoint.
@@ -232,13 +295,11 @@ Note: `span` may be of any type which which provides methods for `AlignedSpans.s
     AlignedSpans could make a different choice to e.g. canonicalize samples to only add an additional nanosecond,
     but that has its own issue (e.g. `TimeSpan(AlignedSpan(sample_rate, 1, 2))` and `TimeSpan(AlignedSpan(sample_rate, 3, 4))` would not be consecutive).
     
+See also [`AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSampleSpans)`](@ref).
 """
 function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
     first_index = start_index_from_time(sample_rate, span, mode.start)
     last_index = stop_index_from_time(sample_rate, span, mode.stop)
-    if last_index < first_index
-        throw(ArgumentError("No samples lie within `span`"))
-    end
     return AlignedSpan(sample_rate, first_index, last_index)
 end
 
@@ -257,7 +318,7 @@ This is designed so that if `AlignedSpan(sample_rate, span, mode::ConstantSample
 
 For this reason, we ask for `TimeSpans.duration(span)` to be defined, rather than a `n_samples(span)` function: the idea is that we want to only using the duration and the starting time, rather than the *actual* number of samples in this particular `span`.
 
-In contrast, `AlignedSpan(sample_rate, span, RoundInward)` provides an `AlignedSpan` which includes only (and exactly) the samples which occur within `span`.
+In contrast, [`RoundInward`](@ref) provides an `AlignedSpan` which includes only (and exactly) the samples which occur within `span` (as instants in time), while [`AlignedSpan(sample_rate, span, ::RoundingModeFullyContainedSampleSpans)`](@ref) provides an `AlignedSpan` consisting of the full spans from each sample until the next sample occurs that are contained in the input span.
 
 If one wants to create a collection of consecutive, non-overlapping, `AlignedSpans` each with the same number of samples, then use [`consecutive_subspans`](@ref) instead.
 """
@@ -265,6 +326,38 @@ function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
     first_index = start_index_from_time(sample_rate, span, mode.start)
     n = n_samples(sample_rate, duration(span))
     last_index = first_index + n - 1
+    return AlignedSpan(sample_rate, first_index, last_index)
+end
+
+"""
+    AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSampleSpans)
+
+Constructs an `AlignedSpan` consisting of the full spans from each sample until the next sample occurs that are contained in the input span. 
+
+For example:
+```jldoctest
+julia> using TimeSpans, AlignedSpans, Dates
+
+julia> sample_rate = 1/30
+0.03333333333333333
+
+julia> input = TimeSpan(0, Second(30) + Nanosecond(1))
+TimeSpan(00:00:00.000000000, 00:00:30.000000001)
+
+julia> aligned = AlignedSpan(sample_rate, input, RoundFullyContainedSampleSpans)
+AlignedSpan(0.03333333333333333, 1, 1)
+
+julia> TimeSpan(aligned)
+TimeSpan(00:00:00.000000000, 00:00:30.000000000)
+```
+
+Here, in contrast to the behavior for [`RoundInward`](@ref) or [`RoundSpanDown`](@ref), only one sample is included,
+since only one 30s-long "sample span" is fully included in the input span.
+
+"""
+function AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSampleSpans)
+    first_index = start_index_from_time(sample_rate, span, RoundUp)
+    last_index = stop_index_from_time(sample_rate, span, mode)
     return AlignedSpan(sample_rate, first_index, last_index)
 end
 

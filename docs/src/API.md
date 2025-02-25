@@ -5,6 +5,7 @@ AlignedSpan
 AlignedSpans.SpanRoundingMode
 AlignedSpans.RoundInward
 AlignedSpans.RoundSpanDown
+AlignedSpans.RoundFullyContainedSampleSpans
 AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
 AlignedSpans.ConstantSamplesRoundingMode
 AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)

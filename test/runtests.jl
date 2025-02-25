@@ -68,8 +68,7 @@ end
         # Does *not* contain any samples
         for span in (TimeSpan(Millisecond(1999), Millisecond(2000)),
                      TimeSpan(-Millisecond(2001), -Millisecond(2000)))
-            @test_throws ArgumentError("No samples lie within `span`") AlignedSpan(1, span,
-                                                                                   RoundInward)
+            @test_throws ArgumentError AlignedSpan(1, span, RoundInward)
         end
     end
 

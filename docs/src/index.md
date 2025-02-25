@@ -11,7 +11,7 @@ See [API documentation](@ref) for how to construct AlignedSpans, along with some
 Continuous timespans can be rounded (or "aligned") to the individual sample values by using the constructor `AlignedSpan`, which takes a `sample_rate`, a `span`, and a description of how to round time endpoints to indices. This constructs an `AlignedSpan` which supports Onda indexing. Internally, an `AlignedSpan` stores indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
 
 !!! note
-    AlignedSpans, like Onda, treats primarily treats samples as instants in time (rather than spans), and cares about "which samples have occurred by such and such point in time" rather than "what sample-span is ongoing at such and such point in time".
+    AlignedSpans, like Onda, primarily treats samples as instants in time (rather than spans), and cares about "which samples have occurred by such and such point in time" rather than "what sample-span is ongoing at such and such point in time". See [`RoundFullyContainedSampleSpans`](@ref) for an exception, an approach that treats samples as spans.
 
 Rounding options:
 
@@ -19,6 +19,7 @@ Rounding options:
     * The alias `RoundInward = SpanRoundingMode(RoundUp, RoundDown)`, for example, constructs the largest span such that all samples are entirely contained within `span`.
     * The alias `RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`.
 * `ConstantSamplesRoundingMode` consists of a `RoundingMode` for the `start` alone. The `stop` is determined from the `start` plus a number of samples which is a function only of the sampling rate and the `duration` of the span.
+* `RoundFullyContainedSampleSpans` This is a special rounding mode which differs from the other rounding modes by associating each sample with a _span_ (from the instant the sample occurs until just before the next sample occurs), and rounding inwards to the "sample spans" that are fully contained in the input span.
 
 Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
 
