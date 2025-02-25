@@ -10,6 +10,9 @@ See [API documentation](@ref) for how to construct AlignedSpans, along with some
 
 Continuous timespans can be rounded (or "aligned") to the individual sample values by using the constructor `AlignedSpan`, which takes a `sample_rate`, a `span`, and a description of how to round time endpoints to indices. This constructs an `AlignedSpan` which supports Onda indexing. Internally, an `AlignedSpan` stores indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
 
+!!! note
+    AlignedSpans, like Onda, treats primarily treats samples as instants in time (rather than spans), and cares about "which samples have occurred by such and such point in time" rather than "what sample-span is ongoing at such and such point in time".
+
 Rounding options:
 
 * `SpanRoundingMode`: consists of a `RoundingMode` for the `start` and `stop` of the span.
