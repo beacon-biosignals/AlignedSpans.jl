@@ -300,9 +300,6 @@ See also [`AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSample
 function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
     first_index = start_index_from_time(sample_rate, span, mode.start)
     last_index = stop_index_from_time(sample_rate, span, mode.stop)
-    if last_index < first_index
-        throw(ArgumentError("No samples lie within `span`"))
-    end
     return AlignedSpan(sample_rate, first_index, last_index)
 end
 
@@ -361,9 +358,6 @@ since only one 30s-long "sample span" is fully included in the input span.
 function AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSampleSpans)
     first_index = start_index_from_time(sample_rate, span, RoundUp)
     last_index = stop_index_from_time(sample_rate, span, mode)
-    if last_index < first_index
-        throw(ArgumentError("No samples lie within `span`"))
-    end
     return AlignedSpan(sample_rate, first_index, last_index)
 end
 
