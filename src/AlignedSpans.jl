@@ -11,6 +11,8 @@ export AlignedSpan, consecutive_subspans, n_samples, consecutive_overlapping_sub
 # Make our own method so we can add methods for Intervals without piracy
 duration(span) = TimeSpans.duration(span)
 
+const ASSERTS_ON = Ref{Bool}(false)
+
 #####
 ##### Types and rounding modes
 #####
