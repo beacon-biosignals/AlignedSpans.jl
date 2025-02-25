@@ -90,7 +90,23 @@ function stop_index_from_time(sample_rate, interval::Interval,
 
     # We should never need to decrement twice, but we will assert this
     end_of_span_time = time_from_index(sample_rate, last_index + 1) - Nanosecond(1)
-    @assert end_of_span_time in interval
+    if !(end_of_span_time in interval)
+        msg = """
+        [AlignedSpans] Unexpected error in `stop_index_from_time` with `RoundFullyContainedSampleSpans`:
+
+        - `end_of_span_time = $(end_of_span_time)`
+        - `interval = $(interval)`
+        - Expected `end_of_span_time in interval`
+
+        Please file an issue on AlignedSpans.jl: https://github.com/beacon-biosignals/AlignedSpans.jl/issues/new
+        """
+        if ASSERTS_ON[]
+            error(msg)
+        else
+            @warn msg
+        end
+    end
+
     return last_index
 end
 
