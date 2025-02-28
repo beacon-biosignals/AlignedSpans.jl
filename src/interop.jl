@@ -44,8 +44,8 @@ function stop_index_from_time(sample_rate, interval::Interval{Nanosecond,Closed,
     if mode == RoundDown
         t = time_from_index(sample_rate, last_index)
         # this should *always* be true by construction, and we promise it in the docstring.
-        # let's add an check to verify. Note here we add 1ns to make it an open span again, since we've converted to closed
-        if !(t < last(interval) + Nanosecond(1))
+        # let's add an check to verify.
+        if !(t <= last(interval))
             msg = """
             [AlignedSpans] Unexpected error in `stop_index_from_time`:
 
