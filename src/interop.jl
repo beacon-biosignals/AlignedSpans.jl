@@ -10,8 +10,8 @@ duration(interval::Interval{<:TimePeriod}) = last(interval) - first(interval)
 
 function start_index_from_time(sample_rate, interval::Interval,
                                mode::Union{RoundingMode{:Up},RoundingMode{:Down}})
-    first_index, error = index_and_error_from_time(sample_rate, first(interval), mode)
-    if is_start_exclusive(interval) && mode == RoundUp && iszero(error)
+    first_index, err = index_and_error_from_time(sample_rate, first(interval), mode)
+    if is_start_exclusive(interval) && mode == RoundUp && iszero(err)
         first_index += 1
     end
 
@@ -42,8 +42,8 @@ end
 
 function stop_index_from_time(sample_rate, interval::Interval,
                               mode::Union{RoundingMode{:Up},RoundingMode{:Down}})
-    last_index, error = index_and_error_from_time(sample_rate, last(interval), mode)
-    if is_stop_exclusive(interval) && mode == RoundDown && iszero(error)
+    last_index, err = index_and_error_from_time(sample_rate, last(interval), mode)
+    if is_stop_exclusive(interval) && mode == RoundDown && iszero(err)
         last_index -= 1
     end
 
