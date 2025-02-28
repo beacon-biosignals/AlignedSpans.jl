@@ -36,11 +36,11 @@ end
             # Check against `stop_index_from_time`. Note here we add 1ns bc on the left-hand side, `index`
             # is computed as the last sample that has occurred before or at `sample_time`, so when translated
             # into timespans, we want an inclusive right endpoint
-            # @test index ==
-            #       AlignedSpans.stop_index_from_time(rate,
-            #                                         Interval{Nanosecond,Closed,Closed}(Nanosecond(0),
-            #                                                                            sample_time),
-            #                                         RoundDown)[1]
+            @test index ==
+                  AlignedSpans.stop_index_from_time(rate,
+                                                    Interval{Nanosecond,Closed,Closed}(Nanosecond(0),
+                                                                                       sample_time),
+                                                    RoundDown)[1]
             # for TimeSpans, we add 1 to be inclusive
             @test index ==
                   AlignedSpans.stop_index_from_time(rate,

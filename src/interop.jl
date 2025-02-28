@@ -2,18 +2,12 @@
 ##### Intervals -> AlignedSpan
 #####
 
-is_start_exclusive(::Interval{T,L,R}) where {T,L,R} = L == Open
-is_stop_exclusive(::Interval{T,L,R}) where {T,L,R} = R == Open
-
 # Interface methods:
 duration(interval::Interval{<:TimePeriod}) = last(interval) - first(interval)
 
-function start_index_from_time(sample_rate, interval::Interval,
+function start_index_from_time(sample_rate, interval::Interval{Nanosecond,Closed,Closed},
                                mode::Union{RoundingMode{:Up},RoundingMode{:Down}})
-    first_index, err = index_and_error_from_time(sample_rate, first(interval), mode)
-    if is_start_exclusive(interval) && mode == RoundUp && iszero(err)
-        first_index += 1
-    end
+    first_index, _ = index_and_error_from_time(sample_rate, first(interval), mode)
 
     if mode == RoundUp
         t = time_from_index(sample_rate, first_index)
@@ -23,6 +17,9 @@ function start_index_from_time(sample_rate, interval::Interval,
             msg = """
             [AlignedSpans] Unexpected error in `start_index_from_time`:
 
+            - `sample_rate = $(sample_rate)`
+            - `interval = $(interval)`
+            - `mode = $(mode)`
             - `time_from_index(sample_rate, first_index) = $(t)`
             - `first(interval) = $(first(interval))`
             - Expected `time_from_index(sample_rate, first_index) >= first(interval)`
@@ -33,28 +30,28 @@ function start_index_from_time(sample_rate, interval::Interval,
             if ASSERTS_ON[]
                 error(msg)
             else
-                @warn msg
+                @warn msg maxlog = 100
             end
         end
     end
     return first_index
 end
 
-function stop_index_from_time(sample_rate, interval::Interval,
+function stop_index_from_time(sample_rate, interval::Interval{Nanosecond,Closed,Closed},
                               mode::Union{RoundingMode{:Up},RoundingMode{:Down}})
-    last_index, err = index_and_error_from_time(sample_rate, last(interval), mode)
-    if is_stop_exclusive(interval) && mode == RoundDown && iszero(err)
-        last_index -= 1
-    end
+    last_index, _ = index_and_error_from_time(sample_rate, last(interval), mode)
 
     if mode == RoundDown
         t = time_from_index(sample_rate, last_index)
         # this should *always* be true by construction, and we promise it in the docstring.
-        # let's add an check to verify.
-        if !(t <= last(interval))
+        # let's add an check to verify. Note here we add 1ns to make it an open span again, since we've converted to closed
+        if !(t <= last(interval) + Nanosecond(1))
             msg = """
             [AlignedSpans] Unexpected error in `stop_index_from_time`:
 
+            - `sample_rate = $(sample_rate)`
+            - `interval = $(interval)`
+            - `mode = $(mode)`
             - `time_from_index(sample_rate, last_index) = $(t)`
             - `last(interval) = $(last(interval))`
             - Expected `time_from_index(sample_rate, last_index) <= last(interval)`
@@ -65,15 +62,15 @@ function stop_index_from_time(sample_rate, interval::Interval,
             if ASSERTS_ON[]
                 error(msg)
             else
-                @warn msg
+                @warn msg maxlog = 100
             end
         end
     end
     return last_index
 end
 
-function stop_index_from_time(sample_rate, interval::Interval,
-                              ::RoundingModeFullyContainedSampleSpans)
+function stop_index_from_time(sample_rate, interval::Interval{Nanosecond,Closed,Closed},
+                              mode::RoundingModeFullyContainedSampleSpans)
     # here we are in `RoundingModeFullyContainedSampleSpans` which means we treat each sample
     # as a closed-open span starting from each sample to just before the next sample,
     # and we are trying to round down to the last fully-enclosed sample span
@@ -94,6 +91,9 @@ function stop_index_from_time(sample_rate, interval::Interval,
         msg = """
         [AlignedSpans] Unexpected error in `stop_index_from_time` with `RoundFullyContainedSampleSpans`:
 
+        - `sample_rate = $(sample_rate)`
+        - `interval = $(interval)`
+        - `mode = $(mode)`
         - `end_of_span_time = $(end_of_span_time)`
         - `interval = $(interval)`
         - Expected `end_of_span_time in interval`
@@ -103,7 +103,7 @@ function stop_index_from_time(sample_rate, interval::Interval,
         if ASSERTS_ON[]
             error(msg)
         else
-            @warn msg
+            @warn msg maxlog = 100
         end
     end
 
@@ -129,8 +129,16 @@ TimeSpans.start(span::AlignedSpan) = time_from_index(span.sample_rate, span.firs
 TimeSpans.stop(span::AlignedSpan) = time_from_index(span.sample_rate, span.last_index + 1)
 
 # TimeSpan -> AlignedSpan is supported by passing to Intervals
-to_interval(span) = Interval{Nanosecond,Closed,Open}(start(span), stop(span))
-to_interval(span::Interval) = span
+function to_interval(span)
+    # we could return clopen intervals, but it's easier to work with closed-closed ones
+    # Interval{Nanosecond,Closed,Open}(start(span), stop(span))
+    # convert from open endpoint to closed by removing last ns
+    return Interval{Nanosecond,Closed,Closed}(start(span), stop(span) - Nanosecond(1))
+end
+to_interval(span::Interval{Nanosecond,Closed,Closed}) = span
+function to_interval(span::Interval{Nanosecond,Closed,Open})
+    return Interval{Nanosecond,Closed,Closed}(first(span), last(span) - Nanosecond(1))
+end
 
 # Interface methods:
 
