@@ -26,7 +26,7 @@ end
             (Nanosecond(12345), Minute(5), Nanosecond(Minute(5)) + Nanosecond(1),
              Nanosecond(1), Nanosecond(10^6), Nanosecond(6970297031),
              Nanosecond(230000000001), Nanosecond(ceil(Int, 10^9 / rate) + 1),
-             Nanosecond(1000000000))
+             Nanosecond(1000000000), Nanosecond(1000000000) - Nanosecond(1))
             # compute with a very simple algorithm
             index = naive_index_from_time(rate, sample_time)
             # Check against our `TimeSpans.index_from_time`:
