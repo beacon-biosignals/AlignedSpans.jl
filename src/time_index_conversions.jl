@@ -5,7 +5,10 @@
 const NS_IN_SEC = Dates.value(Nanosecond(Second(1)))  # Number of nanoseconds in one second
 
 # Tweaked from TimeSpans version: https://github.com/beacon-biosignals/AlignedSpans.jl/pull/2#discussion_r829582819
-nanoseconds_per_sample(sample_rate) = NS_IN_SEC / sample_rate
+nanoseconds_per_sample(sample_rate) = maybe_rational(NS_IN_SEC, sample_rate)
+
+maybe_rational(a::Integer, b::Integer) = a // b
+maybe_rational(a, b) = isinteger(b) && isinteger(b) ? Int(a) // Int(b) : a / b
 
 function time_from_index(sample_rate, sample_index)
     return Nanosecond(ceil(Int, (sample_index - 1) * nanoseconds_per_sample(sample_rate)))
