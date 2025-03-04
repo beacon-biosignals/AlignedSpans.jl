@@ -9,9 +9,9 @@ function time_from_index(sample_rate, sample_index)
     if isinteger(sample_rate)
         # avoid floating-point rounding issues
         # https://github.com/beacon-biosignals/AlignedSpans.jl/pull/42
-        return Nanosecond(ceil(Int, (sample_index - 1) * NS_IN_SEC  // Int(sample_rate)))
+        return Nanosecond(ceil(Int, (sample_index - 1) * NS_IN_SEC // Int(sample_rate)))
     else
-        return Nanosecond(ceil(Int, (sample_index - 1) * NS_IN_SEC  / sample_rate))
+        return Nanosecond(ceil(Int, (sample_index - 1) * (NS_IN_SEC / sample_rate)))
     end
 end
 #
