@@ -32,7 +32,6 @@ end
             # Check against our `TimeSpans.index_from_time`:
             @test index ==
                   AlignedSpans.index_and_error_from_time(rate, sample_time, RoundDown)[1]
-                  
             # Works even if `rate` is in Float64 precision:
             @test index ==
                   AlignedSpans.index_and_error_from_time(Float64(rate), sample_time,
