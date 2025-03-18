@@ -6,9 +6,12 @@ const NS_IN_SEC = Dates.value(Nanosecond(Second(1)))  # Number of nanoseconds in
 
 # Tweaked from TimeSpans version: https://github.com/beacon-biosignals/AlignedSpans.jl/pull/2#discussion_r829582819
 function time_from_index(sample_rate, sample_index)
-    # v4 from https://github.com/beacon-biosignals/AlignedSpans.jl/pull/41#issuecomment-2714077963
-    return Nanosecond(ceil(Int,
-                           (Float64(sample_index - 1) * Float64(NS_IN_SEC)) / sample_rate))
+    # v7 from https://github.com/beacon-biosignals/AlignedSpans.jl/pull/41#issuecomment-2732805250
+    if isinteger(sample_rate)
+        return Nanosecond(cld(Int128(sample_index - 1) * Int128(NS_IN_SEC), Int128(sample_rate)))
+    else
+        return Nanosecond(cld(Int128(sample_index - 1) * Int128(NS_IN_SEC), rationalize(sample_rate)))
+    end
 end
 #
 ##
