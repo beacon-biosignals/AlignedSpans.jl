@@ -157,7 +157,9 @@ end
 #####
 
 StructTypes.StructType(::Type{AlignedSpan}) = StructTypes.Struct()
-StructTypes.constructfrom(::Type{AlignedSpan}, obj) = AlignedSpan(obj[:sample_rate], obj[:first_index], obj[:last_index])
+function StructTypes.constructfrom(::Type{AlignedSpan}, obj)
+    return AlignedSpan(obj[:sample_rate], obj[:first_index], obj[:last_index])
+end
 
 const ARROW_ALIGNED_SPAN = Symbol("AlignedSpans.AlignedSpan")
 ArrowTypes.arrowname(::Type{AlignedSpan}) = ARROW_ALIGNED_SPAN

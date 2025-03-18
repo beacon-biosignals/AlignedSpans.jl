@@ -12,7 +12,8 @@ end
 ##
 
 # Helper to get the index and the rounding error in units of time
-function index_from_time(sample_rate, sample_time::Union{Period, Dates.CompoundPeriod}, mode::RoundingMode)
+function index_from_time(sample_rate, sample_time::Union{Period,Dates.CompoundPeriod},
+                         mode::RoundingMode)
     time_in_nanoseconds = Dates.value(convert(Nanosecond, sample_time))
     # +1 since time 0 corresponds to index 1
     index = Int(div(Int128(time_in_nanoseconds) * sample_rate, NS_IN_SEC_128, mode) + 1)

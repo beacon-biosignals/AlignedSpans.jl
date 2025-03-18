@@ -226,8 +226,10 @@ struct AlignedSpan
 end
 
 # Helps arrow deserialization
-function AlignedSpan(rational_sample_rate::@NamedTuple{num::I, den::I}, first_index::Integer, last_index::Integer) where {I <: Integer}
-    return AlignedSpan(rational_sample_rate.num // rational_sample_rate.den, first_index, last_index)
+function AlignedSpan(rational_sample_rate::@NamedTuple{num::I,den::I}, first_index::Integer,
+                     last_index::Integer) where {I<:Integer}
+    return AlignedSpan(rational_sample_rate.num // rational_sample_rate.den, first_index,
+                       last_index)
 end
 
 #####

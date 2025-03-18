@@ -35,7 +35,7 @@ end
             # Works even if `rate` is in Float64 precision:
             @test index ==
                   AlignedSpans.index_from_time(Float64(rate), sample_time,
-                                                         RoundDown)[1]
+                                               RoundDown)[1]
 
             # Check against `stop_index_from_time`. On the left-hand side, `index`
             # is computed as the last sample that has occurred before or at `sample_time`,
