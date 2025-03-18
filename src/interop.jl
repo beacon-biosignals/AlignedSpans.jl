@@ -7,7 +7,7 @@ duration(interval::Interval{<:TimePeriod}) = last(interval) - first(interval)
 
 function start_index_from_time(sample_rate, interval::Interval{Nanosecond,Closed,Closed},
                                mode::Union{RoundingMode{:Up},RoundingMode{:Down}})
-    first_index, _ = index_and_error_from_time(sample_rate, first(interval), mode)
+    first_index = index_from_time(sample_rate, first(interval), mode)
 
     if mode == RoundUp
         t = time_from_index(sample_rate, first_index)
@@ -39,7 +39,7 @@ end
 
 function stop_index_from_time(sample_rate, interval::Interval{Nanosecond,Closed,Closed},
                               mode::Union{RoundingMode{:Up},RoundingMode{:Down}})
-    last_index, _ = index_and_error_from_time(sample_rate, last(interval), mode)
+    last_index = index_from_time(sample_rate, last(interval), mode)
 
     if mode == RoundDown
         t = time_from_index(sample_rate, last_index)
@@ -74,7 +74,7 @@ function stop_index_from_time(sample_rate, interval::Interval{Nanosecond,Closed,
     # here we are in `RoundingModeFullyContainedSampleSpans` which means we treat each sample
     # as a closed-open span starting from each sample to just before the next sample,
     # and we are trying to round down to the last fully-enclosed sample span
-    last_index, _ = index_and_error_from_time(sample_rate, last(interval), RoundDown)
+    last_index = index_from_time(sample_rate, last(interval), RoundDown)
 
     # `time_from_index(sample_rate, last_index + 1)` gives us the _start_ of the next sample
     # we subtract 1 ns to get the (inclusive) _end_ of the span associated to this sample
@@ -117,7 +117,7 @@ end
 #####
 
 function Onda.column_arguments(samples::Samples, span::AlignedSpan)
-    span.sample_rate == samples.info.sample_rate ||
+    Float64(span.sample_rate) == samples.info.sample_rate ||
         throw(ArgumentError("Sample rate of `samples` ($(samples.info.sample_rate)) does not match sample rate of `AlignedSpan` argument ($(span.sample_rate))."))
     return indices(span)
 end
@@ -157,6 +157,7 @@ end
 #####
 
 StructTypes.StructType(::Type{AlignedSpan}) = StructTypes.Struct()
+StructTypes.constructfrom(::Type{AlignedSpan}, obj) = AlignedSpan(obj[:sample_rate], obj[:first_index], obj[:last_index])
 
 const ARROW_ALIGNED_SPAN = Symbol("AlignedSpans.AlignedSpan")
 ArrowTypes.arrowname(::Type{AlignedSpan}) = ARROW_ALIGNED_SPAN
