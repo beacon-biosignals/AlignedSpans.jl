@@ -78,7 +78,7 @@ TimeSpan(00:00:01.500000000, 00:00:02.500000000)
 The only sample within the span is at index 3. And indeed,
 ```jldoctest RoundInward
 julia> aligned = AlignedSpan(1, ts, RoundInward)
-AlignedSpan(1.0, 3, 3)
+AlignedSpan(1, 3, 3)
 
 julia> AlignedSpans.indices(aligned)
 3:3
@@ -124,7 +124,7 @@ the start of the interval becomes 1s, and the stop of the interval
 becomes 2s. Thus, the associated samples are at indices `2:3`. And indeed,
 ```jldoctest RoundSpanDown
 julia> aligned = AlignedSpan(1, ts, RoundSpanDown)
-AlignedSpan(1.0, 2, 3)
+AlignedSpan(1, 2, 3)
 
 julia> AlignedSpans.indices(aligned)
 2:3
@@ -187,7 +187,7 @@ julia> ts = TimeSpan(Millisecond(1500), Millisecond(3500))
 TimeSpan(00:00:01.500000000, 00:00:03.500000000)
 
 julia> aligned = AlignedSpan(1, ts, RoundFullyContainedSampleSpans)
-AlignedSpan(1.0, 3, 3)
+AlignedSpan(1, 3, 3)
 
 julia> AlignedSpans.indices(aligned)
 3:3
@@ -195,24 +195,41 @@ julia> AlignedSpans.indices(aligned)
 """
 const RoundFullyContainedSampleSpans = RoundingModeFullyContainedSampleSpans()
 
+function convert_sample_rate(sample_rate::Number)
+    if isinteger(sample_rate)
+        return convert(Int64, sample_rate)
+    elseif sample_rate isa Rational
+        return convert(Rational{Int64}, sample_rate)
+    else
+        return rationalize(Int64, sample_rate)
+    end
+end
+
 """
     AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
 
 Construct an `AlignedSpan` directly from a `sample_rate` and indices.
 """
 struct AlignedSpan
-    sample_rate::Float64
+    sample_rate::Union{Int64,Rational{Int64}}
     first_index::Int64
     last_index::Int64
-    function AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
+    function AlignedSpan(sample_rate::Number, first_index::Integer, last_index::Integer)
         if last_index < first_index
             throw(ArgumentError("Cannot create `AlignedSpan` with right-endpoint (`last_index=$(last_index)`) strictly smaller than left endpoint (`first_index=$(first_index)`)"))
         end
-        return new(convert(Float64, sample_rate), first_index, last_index)
+        return new(convert_sample_rate(sample_rate), Int64(first_index), Int64(last_index))
     end
-    function AlignedSpan(sample_rate::Number, index_range::UnitRange{Int})
+    function AlignedSpan(sample_rate::Number, index_range::UnitRange{<:Integer})
         return AlignedSpan(sample_rate, first(index_range), last(index_range))
     end
+end
+
+# Helps arrow deserialization
+function AlignedSpan(rational_sample_rate::@NamedTuple{num::I,den::I}, first_index::Integer,
+                     last_index::Integer) where {I<:Integer}
+    return AlignedSpan(rational_sample_rate.num // rational_sample_rate.den, first_index,
+                       last_index)
 end
 
 #####
@@ -275,7 +292,7 @@ Note: `span` may be of any type which which provides methods for `AlignedSpans.s
     TimeSpan(00:00:00.000000000, 00:00:30.000000001)
 
     julia> aligned = AlignedSpan(sample_rate, input, RoundInward) # or RoundSpanDown
-    AlignedSpan(0.03333333333333333, 1, 2)
+    AlignedSpan(1//30, 1, 2)
 
     julia> TimeSpan(aligned)
     TimeSpan(00:00:00.000000000, 00:01:00.000000000)
@@ -298,6 +315,7 @@ Note: `span` may be of any type which which provides methods for `AlignedSpans.s
 See also [`AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSampleSpans)`](@ref).
 """
 function AlignedSpan(sample_rate, span, mode::SpanRoundingMode)
+    sample_rate = convert_sample_rate(sample_rate)
     first_index = start_index_from_time(sample_rate, span, mode.start)
     last_index = stop_index_from_time(sample_rate, span, mode.stop)
     return AlignedSpan(sample_rate, first_index, last_index)
@@ -323,6 +341,7 @@ In contrast, [`RoundInward`](@ref) provides an `AlignedSpan` which includes only
 If one wants to create a collection of consecutive, non-overlapping, `AlignedSpans` each with the same number of samples, then use [`consecutive_subspans`](@ref) instead.
 """
 function AlignedSpan(sample_rate, span, mode::ConstantSamplesRoundingMode)
+    sample_rate = convert_sample_rate(sample_rate)
     first_index = start_index_from_time(sample_rate, span, mode.start)
     n = n_samples(sample_rate, duration(span))
     last_index = first_index + n - 1
@@ -345,7 +364,7 @@ julia> input = TimeSpan(0, Second(30) + Nanosecond(1))
 TimeSpan(00:00:00.000000000, 00:00:30.000000001)
 
 julia> aligned = AlignedSpan(sample_rate, input, RoundFullyContainedSampleSpans)
-AlignedSpan(0.03333333333333333, 1, 1)
+AlignedSpan(1//30, 1, 1)
 
 julia> TimeSpan(aligned)
 TimeSpan(00:00:00.000000000, 00:00:30.000000000)
@@ -356,6 +375,7 @@ since only one 30s-long "sample span" is fully included in the input span.
 
 """
 function AlignedSpan(sample_rate, span, mode::RoundingModeFullyContainedSampleSpans)
+    sample_rate = convert_sample_rate(sample_rate)
     first_index = start_index_from_time(sample_rate, span, RoundUp)
     last_index = stop_index_from_time(sample_rate, span, mode)
     return AlignedSpan(sample_rate, first_index, last_index)

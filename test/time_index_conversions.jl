@@ -1,6 +1,8 @@
+# return the integer index of the most recent sample taken at `sample_time`
+# i.e. what is the index of the last sample to have occurred before or at `sample_time`
 function naive_index_from_time(sample_rate, sample_time)
     # This stepping computation is prone to roundoff error, so we'll work in high precision
-    sample_time_in_seconds = big(Dates.value(Nanosecond(sample_time))) //
+    sample_time_in_seconds = big(Dates.value(convert(Nanosecond, sample_time))) //
                              big(TimeSpans.NS_IN_SEC)
     # At time 0, we are at index 1
     t = Rational{BigInt}(0 // 1)
@@ -18,21 +20,37 @@ end
 
 # Modified from
 # https://github.com/beacon-biosignals/TimeSpans.jl/blob/e3c999021336e51a08d118e6defb792e38ac1cc7/test/runtests.jl#L116-L126
-@testset "index_and_error_from_time" begin
-    for rate in (101 // 2, 1001 // 10, 200, 256, 1, 10, 1 // 30)
+@testset "index_from_time" begin
+    for rate in (101 // 2, 1001 // 10, 200, 256, 1, 10, 1 // 30, 180)
         for sample_time in
             (Nanosecond(12345), Minute(5), Nanosecond(Minute(5)) + Nanosecond(1),
              Nanosecond(1), Nanosecond(10^6), Nanosecond(6970297031),
-             Nanosecond(230000000001), Nanosecond(ceil(Int, 10^9 / rate) + 1))
+             Nanosecond(230000000001), Nanosecond(ceil(Int, 10^9 / rate) + 1),
+             Nanosecond(1000000000), Nanosecond(1000000000) - Nanosecond(1))
             # compute with a very simple algorithm
             index = naive_index_from_time(rate, sample_time)
             # Check against our `TimeSpans.index_from_time`:
             @test index ==
-                  AlignedSpans.index_and_error_from_time(rate, sample_time, RoundDown)[1]
+                  AlignedSpans.index_from_time(rate, sample_time, RoundDown)[1]
             # Works even if `rate` is in Float64 precision:
             @test index ==
-                  AlignedSpans.index_and_error_from_time(Float64(rate), sample_time,
-                                                         RoundDown)[1]
+                  AlignedSpans.index_from_time(Float64(rate), sample_time,
+                                               RoundDown)[1]
+
+            # Check against `stop_index_from_time`. On the left-hand side, `index`
+            # is computed as the last sample that has occurred before or at `sample_time`,
+            # so when translated into timespans, we want an inclusive right endpoint.
+            @test index ==
+                  AlignedSpans.stop_index_from_time(rate,
+                                                    Interval{Nanosecond,Closed,Closed}(Nanosecond(0),
+                                                                                       sample_time),
+                                                    RoundDown)[1]
+            # for TimeSpans, we add 1 to still be right-inclusive
+            @test index ==
+                  AlignedSpans.stop_index_from_time(rate,
+                                                    TimeSpan(0,
+                                                             sample_time + Nanosecond(1)),
+                                                    RoundDown)[1]
         end
     end
 end
@@ -105,5 +123,6 @@ end
     end
 
     # Compound periods are also handled
+
     @test n_samples(1e9, Minute(1) + Nanosecond(1)) == 60 * 1e9 + 1
 end
