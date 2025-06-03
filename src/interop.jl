@@ -156,10 +156,18 @@ end
 ##### Serialization
 #####
 
-StructTypes.StructType(::Type{AlignedSpan}) = StructTypes.Struct()
-function StructTypes.constructfrom(::Type{AlignedSpan}, obj)
-    return AlignedSpan(obj[:sample_rate], obj[:first_index], obj[:last_index])
+StructTypes.StructType(::Type{AlignedSpan}) = StructTypes.CustomStruct()
+StructTypes.lower(x::AlignedSpan) = (; x.sample_rate, x.first_index, x.last_index)
+function StructTypes.lowertype(::Type{AlignedSpan})
+    return @NamedTuple begin
+        # add Float64 to support deserializing from JSON
+        sample_rate::Union{Float64,Int64,Rational{Int64}}
+        first_index::Int64
+        last_index::Int64
+    end
 end
+StructTypes.construct(::Type{AlignedSpan}, args::NamedTuple) = AlignedSpan(args...)
+
 
 const ARROW_ALIGNED_SPAN = Symbol("AlignedSpans.AlignedSpan")
 ArrowTypes.arrowname(::Type{AlignedSpan}) = ARROW_ALIGNED_SPAN
