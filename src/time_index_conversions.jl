@@ -29,6 +29,8 @@ function n_samples(sample_rate, duration::Union{Period,Dates.CompoundPeriod})
     duration_in_nanoseconds = Dates.value(convert(Nanosecond, duration))
     duration_in_nanoseconds >= 0 ||
         throw(ArgumentError("`duration` must be >= 0 nanoseconds"))
+    # ensure that sample rate is Int128/rational for full precision
+    sample_rate = convert_sample_rate(sample_rate)
     # -1 to remove the +1 in `index_from_time`; we are a difference in indices (a duration)
     return index_from_time(sample_rate, duration, RoundDown) - 1
 end
