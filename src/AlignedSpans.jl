@@ -78,7 +78,7 @@ TimeSpan(00:00:01.500000000, 00:00:02.500000000)
 The only sample within the span is at index 3. And indeed,
 ```jldoctest RoundInward
 julia> aligned = AlignedSpan(1, ts, RoundInward)
-AlignedSpan(1.0, 3, 3)
+AlignedSpan(1, 3, 3)
 
 julia> AlignedSpans.indices(aligned)
 3:3
@@ -124,7 +124,7 @@ the start of the interval becomes 1s, and the stop of the interval
 becomes 2s. Thus, the associated samples are at indices `2:3`. And indeed,
 ```jldoctest RoundSpanDown
 julia> aligned = AlignedSpan(1, ts, RoundSpanDown)
-AlignedSpan(1.0, 2, 3)
+AlignedSpan(1, 2, 3)
 
 julia> AlignedSpans.indices(aligned)
 2:3
@@ -187,7 +187,7 @@ julia> ts = TimeSpan(Millisecond(1500), Millisecond(3500))
 TimeSpan(00:00:01.500000000, 00:00:03.500000000)
 
 julia> aligned = AlignedSpan(1, ts, RoundFullyContainedSampleSpans)
-AlignedSpan(1.0, 3, 3)
+AlignedSpan(1, 3, 3)
 
 julia> AlignedSpans.indices(aligned)
 3:3
@@ -292,7 +292,7 @@ Note: `span` may be of any type which which provides methods for `AlignedSpans.s
     TimeSpan(00:00:00.000000000, 00:00:30.000000001)
 
     julia> aligned = AlignedSpan(sample_rate, input, RoundInward) # or RoundSpanDown
-    AlignedSpan(0.03333333333333333, 1, 2)
+    AlignedSpan(1//30, 1, 2)
 
     julia> TimeSpan(aligned)
     TimeSpan(00:00:00.000000000, 00:01:00.000000000)
@@ -364,7 +364,7 @@ julia> input = TimeSpan(0, Second(30) + Nanosecond(1))
 TimeSpan(00:00:00.000000000, 00:00:30.000000001)
 
 julia> aligned = AlignedSpan(sample_rate, input, RoundFullyContainedSampleSpans)
-AlignedSpan(0.03333333333333333, 1, 1)
+AlignedSpan(1//30, 1, 1)
 
 julia> TimeSpan(aligned)
 TimeSpan(00:00:00.000000000, 00:00:30.000000000)
