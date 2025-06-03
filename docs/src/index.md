@@ -43,7 +43,7 @@ This choice of conversion matches the inclusive-inclusive indexing of Julia inte
 julia> using AlignedSpans, TimeSpans, Dates
 
 julia> aligned = AlignedSpan(1, 2, 3)
-AlignedSpan(1.0, 2, 3)
+AlignedSpan(1, 2, 3)
 
 julia> ts = TimeSpan(aligned)
 TimeSpan(00:00:01.000000000, 00:00:03.000000000)
