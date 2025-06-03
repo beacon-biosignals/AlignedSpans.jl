@@ -168,7 +168,6 @@ function StructTypes.lowertype(::Type{AlignedSpan})
 end
 StructTypes.construct(::Type{AlignedSpan}, args::NamedTuple) = AlignedSpan(args...)
 
-
 const ARROW_ALIGNED_SPAN = Symbol("AlignedSpans.AlignedSpan")
 ArrowTypes.arrowname(::Type{AlignedSpan}) = ARROW_ALIGNED_SPAN
 ArrowTypes.JuliaType(::Val{ARROW_ALIGNED_SPAN}) = AlignedSpan
