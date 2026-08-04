@@ -2,7 +2,7 @@ function test_subspans(aligned, sample_rate, dur)
     subspans = collect(consecutive_subspans(aligned, dur))
     @test length(subspans) == cld(n_samples(aligned), n_samples(sample_rate, dur))
     for i in 1:(length(subspans) - 1)
-        @test subspans[i + 1].first_index == subspans[i].last_index + 1 # consecutive indices
+        @test subspans[i + 1].first_index == subspans[i].last_index + 1 # consecutive sample indices
         @test n_samples(subspans[i]) == n_samples(sample_rate, dur) # each has as many samples as prescribed by the duration
     end
     r = rem(n_samples(aligned), n_samples(sample_rate, dur)) # last one has the remainder
@@ -25,7 +25,7 @@ function test_subspans_skip_last(aligned, sample_rate, dur)
     subspans = collect(consecutive_subspans(aligned, dur; keep_last=false))
     @test length(subspans) == fld(n_samples(aligned), n_samples(sample_rate, dur))
     for i in 1:(length(subspans) - 1)
-        @test subspans[i + 1].first_index == subspans[i].last_index + 1 # consecutive indices
+        @test subspans[i + 1].first_index == subspans[i].last_index + 1 # consecutive sample indices
         @test n_samples(subspans[i]) == n_samples(sample_rate, dur) # each has as many samples as prescribed by the duration
     end
 

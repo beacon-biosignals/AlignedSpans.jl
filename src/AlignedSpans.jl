@@ -47,7 +47,7 @@ end
     RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
 This is a rounding mode where both ends of the time interval are rounded "inwards"
-to construct the largest span of indices such that all samples, as instants of time, occur within the span.
+to construct the largest span of sample indices such that all samples, as instants of time, occur within the span.
 
 ## Example
 
@@ -83,7 +83,7 @@ AlignedSpan(1, 3, 3)
 julia> AlignedSpans.indices(aligned)
 3:3
 ```
-gives an `AlignedSpan` with indices `3:3`.
+gives an `AlignedSpan` with sample indices `3:3`.
 """
 const RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
@@ -129,7 +129,7 @@ AlignedSpan(1, 2, 3)
 julia> AlignedSpans.indices(aligned)
 2:3
 ```
-gives an `AlignedSpan` with indices `2:3`.
+gives an `AlignedSpan` with sample indices `2:3`.
 """
 const RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
 
@@ -208,7 +208,7 @@ end
 """
     AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
 
-Construct an `AlignedSpan` directly from a `sample_rate` and indices.
+Construct an `AlignedSpan` directly from a `sample_rate` and sample indices `first_index` and `last_index`.
 """
 struct AlignedSpan
     sample_rate::Union{Int64,Rational{Int64}}

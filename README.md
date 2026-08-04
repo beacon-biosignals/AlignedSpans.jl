@@ -9,6 +9,6 @@
 
 AlignedSpans converts between time spans and sample indices. Time spans describe a time interval down to a resolution of 1 ns and are usually provided by TimeSpans.jl. Sample indices are associated to signals sampled at some finite rate (e.g. Onda.jl's `Samples` objects). 
 
-AlignedSpans provides an `AlignedSpan` type which holds integer indices along with a sample rate. An `AlignedSpan` is thus a pair of sample indices, but since it holds the sample rate, it can be used to represent a time span as well, and it supports the TimeSpans.jl interface.
+AlignedSpans provides an `AlignedSpan` type which holds integer sample indices along with a sample rate. An `AlignedSpan` is thus a pair of sample indices, but since it holds the sample rate, it can be used to represent a time span as well, and it supports the TimeSpans.jl interface.
 
 See the [documentation](https://beacon-biosignals.github.io/AlignedSpans.jl/) for more.
