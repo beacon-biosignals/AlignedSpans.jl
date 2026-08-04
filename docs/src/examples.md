@@ -31,6 +31,10 @@ in_span = AlignedSpan(1, span, RoundInward)
 n_samples(in_span)
 ```
 
+```@raw html
+<div class="aligned-spans-widget" data-scenario="eeg-onda-indexing" data-results="RoundSpanDown,RoundInward"></div>
+```
+
 ## Hypnograms and other span-like samples
 
 Some signals, like hypnograms, are more naturally thought of as a sequence of spans rather than a sequence of instants: each sample summarizes some region of time (e.g. a 30 second sleep-stage epoch) rather than being measured at a single instant. For these, `RoundFullyContainedSampleSpans` is usually a better fit than `RoundInward`.
@@ -53,7 +57,11 @@ Compare this to rounding the same `input` with `RoundInward`:
 AlignedSpan(sample_rate, input, RoundInward)
 ```
 
-`RoundInward` includes both the sample at 00:00 and the sample at 00:30, since both occur within `input`. `RoundFullyContainedSampleSpans` includes only the sample at 00:00, since `input` doesn't fully contain the sample-span from 00:30 to 01:00.
+`RoundInward` includes both the sample at 00:00 and the sample at 00:30, since both occur within `input`. `RoundFullyContainedSampleSpans` includes only the sample at 00:00, since `input` doesn't fully contain the sample-span from 00:30 to 01:00. The filled blocks below are the sample-spans that `RoundFullyContainedSampleSpans` reasons about; the dots are the sample instants that `RoundInward` reasons about:
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="rounding-grows-span" data-results="RoundInward,RoundFullyContainedSampleSpans"></div>
+```
 
 ## Getting a consistent number of samples across spans
 
@@ -64,21 +72,33 @@ using TimeSpans, AlignedSpans, Dates
 
 sample_rate = 3
 
-span1 = TimeSpan(Millisecond(100), Millisecond(1100))
-span2 = TimeSpan(Millisecond(200), Millisecond(1200))
-
-n_samples(AlignedSpan(sample_rate, span1, RoundInward))
-n_samples(AlignedSpan(sample_rate, span2, RoundInward))
+span1 = TimeSpan(Millisecond(0), Millisecond(700))
+span2 = TimeSpan(Millisecond(100), Millisecond(800))
 ```
 
-Both spans have the same duration, but rounding inward can give a different number of samples depending on alignment. Using `ConstantSamplesRoundingMode` instead:
+For `span1`:
 
 ```@repl windows
+n_samples(AlignedSpan(sample_rate, span1, RoundInward))
 n_samples(AlignedSpan(sample_rate, span1, ConstantSamplesRoundingMode(RoundDown)))
+```
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="constant-samples-1" data-results="RoundInward,ConstantSamplesRoundingMode"></div>
+```
+
+`span2` has the same duration as `span1`, but starts 100ms later, which changes how it lines up with the sample rate:
+
+```@repl windows
+n_samples(AlignedSpan(sample_rate, span2, RoundInward))
 n_samples(AlignedSpan(sample_rate, span2, ConstantSamplesRoundingMode(RoundDown)))
 ```
 
-now both spans have the same number of samples.
+```@raw html
+<div class="aligned-spans-widget" data-scenario="constant-samples-2" data-results="RoundInward,ConstantSamplesRoundingMode"></div>
+```
+
+`RoundInward` gives `span1` 3 samples but `span2` only 2, even though they have the same duration; `ConstantSamplesRoundingMode` gives both 2.
 
 ## Splitting a span into fixed-size or sliding windows
 
@@ -90,13 +110,31 @@ using AlignedSpans
 span = AlignedSpan(1, 1:10) # 10 samples at 1Hz
 
 collect(consecutive_subspans(span, 3)) # windows of 3 samples; the last one may be shorter
+```
 
-collect(consecutive_subspans(span, 3; keep_last=false)) # drop the short last window instead
+```@raw html
+<div class="aligned-spans-widget" data-scenario="windowing" data-results="windows"></div>
+```
 
+Pass `keep_last=false` to drop that short last window instead, if your downstream code requires every window to have exactly the same number of samples:
+
+```@repl chunking
+collect(consecutive_subspans(span, 3; keep_last=false))
+```
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="windowing" data-results="windows-keep-last-false"></div>
+```
+
+`consecutive_overlapping_subspans` gives sliding windows with a fixed hop between them; it only supports the `keep_last=false` style, since it's not obvious what a partial window should mean once windows overlap:
+
+```@repl chunking
 collect(consecutive_overlapping_subspans(span, 3, 2)) # windows of 3 samples, hopping by 2
 ```
 
-Use `keep_last=false` if your downstream code requires every window to have exactly the same number of samples; use the default `keep_last=true` if you'd rather keep every sample, even if the last window ends up shorter. `consecutive_overlapping_subspans` only supports the `keep_last=false` style, since it's not obvious what a partial window should mean once windows overlap.
+```@raw html
+<div class="aligned-spans-widget" data-scenario="windowing" data-results="windows-overlapping"></div>
+```
 
 ## Spans that start before or run past your recording
 
@@ -108,10 +146,18 @@ using AlignedSpans, TimeSpans, Dates
 AlignedSpan(1238, TimeSpan(Nanosecond(-32), Nanosecond(2)), RoundSpanDown) # the input TimeSpan starts before time 0
 ```
 
-as well as constructing a span directly from out-of-range indices:
+```@raw html
+<div class="aligned-spans-widget" data-scenario="out-of-range-timespan" data-results="RoundSpanDown"></div>
+```
+
+The same applies to constructing a span directly from out-of-range indices:
 
 ```@repl outofrange
 AlignedSpan(1, -5:10) # starts 5 samples before index 1 of some signal
+```
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="out-of-range-raw" data-results="given"></div>
 ```
 
 Indexing a span like this into an actual `Samples` object raises a `BoundsError` once you try, but constructing the `AlignedSpan` itself doesn't require that a signal covering the whole span already exists.
@@ -133,6 +179,10 @@ n_samples(shifted) == n_samples(span)
 ```
 
 `TimeSpans.translate(span, Second(1))` also works, but it shifts the underlying time and then re-rounds, which isn't guaranteed to preserve the number of samples. This may be improved in subsequent releases of AlignedSpans.jl.
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="shifting" data-results="original,shifted"></div>
+```
 
 ## Computing sample counts from compound durations
 
@@ -178,6 +228,10 @@ samples[:, AlignedSpan(sample_rate, span, RoundSpanDown)] # matches samples[:, s
 
 ```@repl onda_indexing
 samples[:, AlignedSpan(sample_rate, span, RoundInward)] # does not match: a different set of samples
+```
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="eeg-onda-indexing" data-results="RoundSpanDown,RoundInward"></div>
 ```
 
 If you need to keep track of exactly which span of time your extracted samples correspond to (for example, to plot them against the correct time axis), construct the `AlignedSpan` with `RoundSpanDown` first, and index with that instead of the original `TimeSpan`:

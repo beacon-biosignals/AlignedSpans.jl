@@ -41,7 +41,13 @@ Index       1   [2    3]    4     5
 Time (s)    0   [1    2     3)    4
 ```
 
-This choice of conversion matches the inclusive-inclusive indexing of Julia integer indices to the inclusive-exclusive semantics Onda/TimeSpans use, and allows for roundtripping and sensible durations:
+This choice of conversion matches the inclusive-inclusive indexing of Julia integer indices to the inclusive-exclusive semantics Onda/TimeSpans use, and allows for roundtripping and sensible durations. Indices `2:3` at a sample rate of 1Hz, and the `TimeSpan` they're associated to:
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="index-to-time" data-results="given"></div>
+```
+
+This is verified in code:
 
 ```jldoctest
 julia> using AlignedSpans, TimeSpans, Dates
@@ -86,6 +92,12 @@ true
 
     Even though `RoundInward` and `RoundSpanDown` both round the right endpoint down, `TimeSpan(aligned)` is `TimeSpan(0, Second(60))`, not `TimeSpan(0, Second(30) + Nanosecond(1))`. That's because indices 1 and 2 correspond to the time from the first sample until just before the sample that would come after index 2, which occurs at `Second(60)`.
 
+    The shaded region below is the input span; the dots are individual samples at 1/30Hz; the colored bracket is the resulting `AlignedSpan`, converted back to a `TimeSpan`:
+
+    ```@raw html
+    <div class="aligned-spans-widget" data-scenario="rounding-grows-span" data-results="RoundInward"></div>
+    ```
+
 ## Motivation
 
 Let's say I want to plot some samples over time, and I have a nice function `plot(::TimeSpan, ::Samples)` to use.
@@ -112,6 +124,12 @@ Let's take a look at the samples we are plotting:
 samples[:, span] # TimeSpans v0.2; v0.3 will have one more sample
 ```
 These are three samples that correspond to times 1s, 2s, and 3s. However, what we gave to the `x`-axis of our plotting function is `TimeSpan(Millisecond(1500), Millisecond(3500))`, which starts at 1.5s and goes to 3.5s. In other words, our plot will have an incorrect 0.5s offset!
+
+The shaded region below is the (wrong) span we plotted against; the bracket is the (correct) span the samples actually cover:
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="motivation-offset" data-results="RoundSpanDown"></div>
+```
 
 Note that `plot` is just an example; any function where one is separately passing both a "timespan of interest" and "feature values from that timespan" will have similar issues if one isn't careful about what exactly `samples[:, span]` is doing.
 
