@@ -6,9 +6,9 @@ CurrentModule = AlignedSpans
 
 See [API documentation](@ref) for how to construct AlignedSpans, along with some utilities, or below for some examples and motivation.
 
-### Continuous -> Discrete
+### Time -> Sample index
 
-Continuous timespans can be rounded (or "aligned") to the individual sample values by using the constructor `AlignedSpan`, which takes a `sample_rate`, a `span`, and a description of how to round time endpoints to indices. This constructs an `AlignedSpan` which supports Onda indexing. Internally, an `AlignedSpan` stores indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
+Timespans can be rounded (or "aligned") to the individual sample values by using the constructor `AlignedSpan`, which takes a `sample_rate`, a `span`, and a description of how to round time endpoints to indices. This constructs an `AlignedSpan` which supports Onda indexing. Internally, an `AlignedSpan` stores indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
 
 !!! note
     AlignedSpans, like Onda, primarily treats samples as instants in time (rather than spans), and cares about "which samples have occurred by such and such point in time" rather than "what sample-span is ongoing at such and such point in time". See [`RoundFullyContainedSampleSpans`](@ref) for an exception, an approach that treats samples as spans.
@@ -23,11 +23,11 @@ Rounding options:
 
 Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
 
-### Discrete -> Continuous 
+### Sample index -> Time
 
-AlignedSpan's support `TimeSpans.start` and `TimeSpans.stop`, so they can be used a continuous-time spans. The semantics of this are:
+AlignedSpan's support `TimeSpans.start` and `TimeSpans.stop`, so they can be used as time spans. The semantics of this are:
 
-> For any index included in an `AlignedSpan`, the time at which the corresponding sample occurred (inclusive) to the time at which the next sample occurred (exclusive) is associated to the continuous-time representation of the span.
+> For any index included in an `AlignedSpan`, the time at which the corresponding sample occurred (inclusive) to the time at which the next sample occurred (exclusive) is associated to the time representation of the span.
 
 As an example, if the sample rate is 1, and indices `2:3` are associated to a `span`, then the associated `TimeSpan` is `TimeSpan(Second(1), Second(3))`. That's because sample 2 occur at time `Second(1)`, and is considered to "last" until sample 3, which occurs at `Second(2)`. Next, sample 3 occurs at time `Second(2)` and is considered to "last" until sample 4, which occurs at `Second(3)`. Therefore, the total span associated to `2:3` is `Second(1)` to `Second(3)`.
 

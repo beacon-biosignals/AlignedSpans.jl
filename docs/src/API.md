@@ -15,9 +15,9 @@ n_samples
 AlignedSpans.indices
 ```
 
-## Interface for conversion from continuous time spans
+## Interface for conversion from time spans
 
-In order to support conversion of continuous time `span` types to [`AlignedSpan`](@ref)'s,
+In order to support conversion of time `span` types to [`AlignedSpan`](@ref)'s,
 three methods may be defined. These are not exported, because they are generally not used directly, but rather defined in order to facilitate use of the [`AlignedSpan`](@ref) constructors.
 
 ```@docs

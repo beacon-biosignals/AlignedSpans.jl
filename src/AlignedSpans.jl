@@ -46,7 +46,7 @@ end
 """
     RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
-This is a rounding mode where both ends of the continuous time interval are rounded "inwards"
+This is a rounding mode where both ends of the time interval are rounded "inwards"
 to construct the largest span of indices such that all samples, as instants of time, occur within the span.
 
 ## Example
@@ -90,7 +90,7 @@ const RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 """
     RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
 
-This is a rounding mode where *both* ends of the continuous time interval are rounded
+This is a rounding mode where *both* ends of the time interval are rounded
 downwards.
 
 ## Example
@@ -233,7 +233,7 @@ function AlignedSpan(rational_sample_rate::@NamedTuple{num::I,den::I}, first_ind
 end
 
 #####
-##### Continuous -> discrete interface
+##### Time -> sample index interface
 #####
 
 # Methods for these API functions are provided in `interop.jl`.
@@ -258,7 +258,7 @@ See also [`AlignedSpan(sample_rate, span, mode::SpanRoundingMode)`](@ref).
 function stop_index_from_time end
 
 #####
-##### Continuous -> discrete conversions
+##### Time -> sample index conversions
 #####
 
 """
