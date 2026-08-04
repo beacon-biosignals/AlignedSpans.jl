@@ -8,7 +8,7 @@ See [API documentation](@ref) for how to construct AlignedSpans, along with some
 
 AlignedSpans, like Onda, primarily treats samples as instants in time (rather than spans), and cares about "which samples have occurred by such and such point in time" rather than "what sample-span is ongoing at such and such point in time". See [`RoundFullyContainedSampleSpans`](@ref) for an exception, an approach that treats samples as spans.
 
-### Time -> Sample index
+### Time → Sample index
 
 Timespans can be rounded (or "aligned") to the individual sample values by using the constructor `AlignedSpan`, which takes a `sample_rate`, a `span`, and a description of how to round time endpoints to sample indices. This constructs an `AlignedSpan` which supports Onda indexing. Internally, an `AlignedSpan` store sample indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
 
@@ -27,7 +27,7 @@ See [Choosing a rounding mode](@ref) for guidance on which of these to use.
 
 Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
 
-### Sample index -> Time
+### Sample index → Time
 
 AlignedSpan's support `TimeSpans.start` and `TimeSpans.stop`, so they can be used as time spans. The semantics of this are:
 
@@ -92,7 +92,7 @@ Let's say I want to plot some samples over time, and I have a nice function `plo
 
 ```@repl motivation
 using TimeSpans, Onda, Dates
-sample_rate = 1 # 1 Hz -> slow to exaggerate the effect
+sample_rate = 1 # 1 Hz → slow to exaggerate the effect
 samples = Samples(permutedims(0:10), SamplesInfoV2(; sensor_type="feature", channels=["a"], sample_unit="microvolt", sample_resolution_in_unit=0.5, sample_offset_in_unit=0.0, sample_type=UInt16, sample_rate), false)
 span = TimeSpan(Millisecond(1500), Millisecond(4000))
 ```

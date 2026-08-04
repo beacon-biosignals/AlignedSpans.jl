@@ -127,3 +127,5 @@ shifted = TimeSpans.translate(span, Second(1)) # the generic fallback shifts the
 
 n_samples(AlignedSpan(span.sample_rate, shifted, RoundSpanDown)) # re-rounding isn't guaranteed to match n_samples(span)
 ```
+
+We may add this in a future release of AlignedSpans.jl.
