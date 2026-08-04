@@ -4,14 +4,13 @@ CurrentModule = AlignedSpans
 
 # AlignedSpans
 
-See [API documentation](@ref) for how to construct AlignedSpans, along with some utilities, or below for some examples and motivation.
+See [API documentation](@ref) for how to construct AlignedSpans, along with some utilities, and [Examples](@ref) for further worked examples.
+
+AlignedSpans, like Onda, primarily treats samples as instants in time (rather than spans), and cares about "which samples have occurred by such and such point in time" rather than "what sample-span is ongoing at such and such point in time". See [`RoundFullyContainedSampleSpans`](@ref) for an exception, an approach that treats samples as spans.
 
 ### Time -> Sample index
 
 Timespans can be rounded (or "aligned") to the individual sample values by using the constructor `AlignedSpan`, which takes a `sample_rate`, a `span`, and a description of how to round time endpoints to sample indices. This constructs an `AlignedSpan` which supports Onda indexing. Internally, an `AlignedSpan` store sample indices, not times, and any rounding happens when it is created instead of when indexing into `samples`.
-
-!!! note
-    AlignedSpans, like Onda, primarily treats samples as instants in time (rather than spans), and cares about "which samples have occurred by such and such point in time" rather than "what sample-span is ongoing at such and such point in time". See [`RoundFullyContainedSampleSpans`](@ref) for an exception, an approach that treats samples as spans.
 
 Rounding options:
 
@@ -20,6 +19,11 @@ Rounding options:
     * The alias `RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)` matches the rounding semantics of `TimeSpans.index_from_time(sample_rate, span)`.
 * `ConstantSamplesRoundingMode` consists of a `RoundingMode` for the `start` alone. The `stop` is determined from the `start` plus a number of samples which is a function only of the sampling rate and the `duration` of the span.
 * `RoundFullyContainedSampleSpans` This is a special rounding mode which differs from the other rounding modes by associating each sample with a _span_ (from the instant the sample occurs until just before the next sample occurs), and rounding inwards to the "sample spans" that are fully contained in the input span.
+
+See [Choosing a rounding mode](@ref) for guidance on which of these to use.
+
+!!! warning
+    If the input `span` is not sample-aligned, meaning the `start` and `stop` of the input span are not exact multiples of the sample rate, the results can be non-intuitive at first, since the rounding is relative to the samples themselves rather than to the input span's endpoints. See the warning in [Choosing a rounding mode](@ref) for a worked example.
 
 Also provides a helper `consecutive_subspans` to partition an `AlignedSpan` into smaller consecutive `AlignedSpans` of equal size (except possibly the last one).
 
@@ -37,12 +41,12 @@ Index       1   [2    3]    4     5
 Time (s)    0   [1    2     3)    4
 ```
 
-This choice of conversion matches the inclusive-inclusive indexing of Julia integer indices to the inclusive-exclusive semantics of TimeSpans.jl, and allows for roundtripping and sensible durations:
+This choice of conversion matches the inclusive-inclusive indexing of Julia integer indices to the inclusive-exclusive semantics Onda/TimeSpans use, and allows for roundtripping and sensible durations:
 
 ```jldoctest
 julia> using AlignedSpans, TimeSpans, Dates
 
-julia> aligned = AlignedSpan(1, 2, 3)
+julia> aligned = AlignedSpan(1, 2:3)
 AlignedSpan(1, 2, 3)
 
 julia> ts = TimeSpan(aligned)
@@ -59,35 +63,28 @@ true
 ```
 
 !!! warning
-    For non-integer sample rates, roundtripping perfectly is not always possible.
+    For non-integer sample rates, roundtripping perfectly is not always possible. Sample rates that aren't already an `Int` or a `Rational` are converted with `rationalize`; see [Design Decisions](@ref) for why.
 
-### Note on roundtripping
+!!! warning
+    Because the stop of the time representation of an `AlignedSpan` is the time at which the sample _after_ the last included one occurs, rounding a span and then converting it back to a `TimeSpan` can give a result that looks larger than the input. For example, at 1/30Hz, the samples occur at 00:00, 00:30, 01:00, and so on. The span `TimeSpan(0, Second(30) + Nanosecond(1))` contains two samples, the ones at 00:00 and 00:30:
 
+    ```jldoctest
+    julia> using TimeSpans, AlignedSpans, Dates
 
-## Quick example
+    julia> sample_rate = 1 // 30
+    1//30
 
-Let's consider the following `TimeSpan`
-```@repl timespan
-using TimeSpans, AlignedSpans, Dates
+    julia> input = TimeSpan(0, Second(30) + Nanosecond(1))
+    TimeSpan(00:00:00.000000000, 00:00:30.000000001)
 
-span = TimeSpan(Millisecond(1500), Millisecond(3500))
-```
+    julia> aligned = AlignedSpan(sample_rate, input, RoundInward) # or RoundSpanDown
+    AlignedSpan(1//30, 1, 2)
 
-If we have a 1 Hz signal, there are various ways we can index into it using this TimeSpan. One option is to round the endpoints down:
-```@repl timespan
+    julia> TimeSpan(aligned)
+    TimeSpan(00:00:00.000000000, 00:01:00.000000000)
+    ```
 
-down_span = AlignedSpan(1, span, RoundSpanDown)
-
-n_samples(down_span)
-```
-The second sample of our signal occurs at time 1s (since we have a 1Hz signal that starts at 0s). When we round the starting endpoint down from 1.5s to the nearest sample, we find that sample. This can be seen as "the last sample that occurred before time 1.5s".
-
-Perhaps instead we would like to round the endpoints "inward" to only consider samples occurring with the time span:
-
-```@repl timespan
-in_span = AlignedSpan(1, span, RoundInward)
-n_samples(in_span)
-```
+    Even though `RoundInward` and `RoundSpanDown` both round the right endpoint down, `TimeSpan(aligned)` is `TimeSpan(0, Second(60))`, not `TimeSpan(0, Second(30) + Nanosecond(1))`. That's because indices 1 and 2 correspond to the time from the first sample until just before the sample that would come after index 2, which occurs at `Second(60)`.
 
 ## Motivation
 
