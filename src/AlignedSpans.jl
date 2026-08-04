@@ -46,8 +46,8 @@ end
 """
     RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
-This is a rounding mode where both ends of the continuous time interval are rounded "inwards"
-to construct the largest span of indices such that all samples, as instants of time, occur within the span.
+This is a rounding mode where both ends of the time interval are rounded "inwards"
+to construct the largest span of sample indices such that all samples, as instants of time, occur within the span.
 
 ## Example
 
@@ -83,14 +83,14 @@ AlignedSpan(1, 3, 3)
 julia> AlignedSpans.indices(aligned)
 3:3
 ```
-gives an `AlignedSpan` with indices `3:3`.
+gives an `AlignedSpan` with sample indices `3:3`.
 """
 const RoundInward = SpanRoundingMode(RoundUp, RoundDown)
 
 """
     RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
 
-This is a rounding mode where *both* ends of the continuous time interval are rounded
+This is a rounding mode where *both* ends of the time interval are rounded
 downwards.
 
 ## Example
@@ -129,7 +129,7 @@ AlignedSpan(1, 2, 3)
 julia> AlignedSpans.indices(aligned)
 2:3
 ```
-gives an `AlignedSpan` with indices `2:3`.
+gives an `AlignedSpan` with sample indices `2:3`.
 """
 const RoundSpanDown = SpanRoundingMode(RoundDown, RoundDown)
 
@@ -208,7 +208,7 @@ end
 """
     AlignedSpan(sample_rate::Number, first_index::Int, last_index::Int)
 
-Construct an `AlignedSpan` directly from a `sample_rate` and indices.
+Construct an `AlignedSpan` directly from a `sample_rate` and sample indices `first_index` and `last_index`.
 """
 struct AlignedSpan
     sample_rate::Union{Int64,Rational{Int64}}
@@ -233,7 +233,7 @@ function AlignedSpan(rational_sample_rate::@NamedTuple{num::I,den::I}, first_ind
 end
 
 #####
-##### Continuous -> discrete interface
+##### Time -> sample index interface
 #####
 
 # Methods for these API functions are provided in `interop.jl`.
@@ -258,7 +258,7 @@ See also [`AlignedSpan(sample_rate, span, mode::SpanRoundingMode)`](@ref).
 function stop_index_from_time end
 
 #####
-##### Continuous -> discrete conversions
+##### Time -> sample index conversions
 #####
 
 """
