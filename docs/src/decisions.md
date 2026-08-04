@@ -22,6 +22,10 @@ aligned = AlignedSpan(1, 2:3) # indices 2 and 3 are both included
 TimeSpan(aligned) # TimeSpans.jl spans exclude their right endpoint: [1s, 3s)
 ```
 
+```@raw html
+<div class="aligned-spans-widget" data-scenario="index-to-time" data-results="given"></div>
+```
+
 ## The index -> time conversion convention
 
 For `TimeSpans.start`/`TimeSpans.stop`, we use `start(span) = time_from_index(sample_rate, first_index)` and `stop(span) = time_from_index(sample_rate, last_index + 1)` ([PR #9](https://github.com/beacon-biosignals/AlignedSpans.jl/pull/9)). We considered instead using the time of the last sample plus one nanosecond, but rejected it for two reasons: durations would come out one sample period short of what's expected (5 samples at 1Hz would have duration `4s + 1ns` instead of `5s`), and two adjacent `AlignedSpan`s would not map to two adjacent `TimeSpan`s (there'd be a gap of almost one sample period between them). Taking the stop as the time of the sample after the last one avoids both problems, and matches the inclusive-inclusive convention of Julia's integer indices to the inclusive-exclusive convention Onda/TimeSpans use.
@@ -36,6 +40,10 @@ aligned = AlignedSpan(1, 2:3) # samples 2 and 3, at 1Hz
 TimeSpan(aligned) # starts when sample 2 occurs, stops when sample 4 would occur
 
 duration(aligned) # 2 samples at 1Hz is a sensible 2 seconds, not `1s + 1ns`
+```
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="index-to-time" data-results="given"></div>
 ```
 
 ## Sample rate representation: floating point vs. rational
@@ -72,6 +80,10 @@ AlignedSpan(1, span, RoundSpanDown) # rounds both endpoints down: 1.5s -> 1s, 2.
 AlignedSpan(1, span, RoundInward) # shrinks until both endpoints land on samples
 ```
 
+```@raw html
+<div class="aligned-spans-widget" data-scenario="decisions-modes-example" data-results="RoundSpanDown,RoundInward"></div>
+```
+
 Naming `RoundSpanDown` took a few iterations ([PR #9](https://github.com/beacon-biosignals/AlignedSpans.jl/pull/9)). We initially called it `RoundEndsDown`, with an `EndpointRoundingMode` type, but `RoundDown` is already exported by `Base` for rounding a single value, and reusing it as part of a name for rounding both ends of an interval was judged confusing. We tried `RoundEndpointsDown`, but "endpoint" was still ambiguous about which endpoint. We settled on `SpanRoundingMode`/`RoundSpanDown`, which reads as "the mode that rounds the span down."
 
 `RoundFullyContainedSampleSpans` was added later ([PR #38](https://github.com/beacon-biosignals/AlignedSpans.jl/pull/38)), after `RoundInward` produced a result that a user found surprising ([issue #36](https://github.com/beacon-biosignals/AlignedSpans.jl/issues/36)): rounding a span with `RoundInward` at 1/30Hz could produce an `AlignedSpan` that, once converted back to a `TimeSpan`, extended well past the original input. `RoundInward` was doing exactly what it's documented to do — including every sample whose instant occurs within the span — but that's not the answer you want if you think of each sample as covering a span of time, as with a hypnogram. Rather than changing `RoundInward`'s semantics, we added `RoundFullyContainedSampleSpans` as a separate mode for that case.
@@ -100,6 +112,10 @@ using AlignedSpans
 AlignedSpan(1, -5:10) # allowed: this span starts before index 1 of some signal
 ```
 
+```@raw html
+<div class="aligned-spans-widget" data-scenario="out-of-range-raw" data-results="given"></div>
+```
+
 `consecutive_subspans` supports `keep_last=false` so its behavior can match `consecutive_overlapping_subspans` ([PR #19](https://github.com/beacon-biosignals/AlignedSpans.jl/pull/19)), but we haven't extended `keep_last=true` semantics to the overlapping case ([issue #20](https://github.com/beacon-biosignals/AlignedSpans.jl/issues/20)): with overlapping windows, it's not obvious what a shorter last window should mean (if there's 8-fold overlap, do the last 7 windows all get shorter, or just the very last one?). We're leaving this until someone has a concrete use case.
 
 ```@repl decisions_keep_last
@@ -108,10 +124,26 @@ using AlignedSpans
 span = AlignedSpan(1, 1:10)
 
 collect(consecutive_subspans(span, 3)) # keep_last=true (default): last window is shorter
+```
 
+```@raw html
+<div class="aligned-spans-widget" data-scenario="windowing" data-results="windows"></div>
+```
+
+```@repl decisions_keep_last
 collect(consecutive_subspans(span, 3; keep_last=false)) # drops the short last window instead
+```
 
+```@raw html
+<div class="aligned-spans-widget" data-scenario="windowing" data-results="windows-keep-last-false"></div>
+```
+
+```@repl decisions_keep_last
 collect(consecutive_overlapping_subspans(span, 3, 2)) # overlapping windows only ever come in the "keep_last=false" style
+```
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="windowing" data-results="windows-overlapping"></div>
 ```
 
 We've sketched, but not implemented, `TimeSpans.translate` for `AlignedSpan` ([issue #12](https://github.com/beacon-biosignals/AlignedSpans.jl/issues/12)) and `merge_aligned_spans` ([issue #22](https://github.com/beacon-biosignals/AlignedSpans.jl/issues/22)). The generic `TimeSpans.translate` fallback already works for `AlignedSpan`s, but shifts the time values directly and can change the resulting sample count; an `AlignedSpan`-specific implementation would shift by a number of samples instead, preserving the count:
@@ -126,6 +158,10 @@ n_samples(span)
 shifted = TimeSpans.translate(span, Second(1)) # the generic fallback shifts the *time* and returns a TimeSpan
 
 n_samples(AlignedSpan(span.sample_rate, shifted, RoundSpanDown)) # re-rounding isn't guaranteed to match n_samples(span)
+```
+
+```@raw html
+<div class="aligned-spans-widget" data-scenario="shifting" data-results="original,shifted"></div>
 ```
 
 We may add this in a future release of AlignedSpans.jl.
