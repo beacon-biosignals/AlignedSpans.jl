@@ -7,6 +7,10 @@ on:
 
 jobs:
   Documenter:
+    permissions:
+      contents: write
+      statuses: write
+      pull-requests: read # needed for Documenter to check whether this PR comes from the same repo
     name: Documentation
     runs-on: ubuntu-latest
     steps:
